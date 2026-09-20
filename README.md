@@ -1,4 +1,4 @@
-# Go Backend Mastery - My 100-Day Backend Engineering Journey
+# Go Backend Mastery
 
 I'm learning backend engineering and distributed systems **in depth, in Go** - one day at a time.
 Each day: learn the topic, **type the code myself** (no copy-paste), commit it under `day-NNN/`.
@@ -402,6 +402,8 @@ Classic FAANG system design problems - I'll do each **timed (35-45 min)**, out l
 | 98  | Drill: URL shortener + rate limiter          | Timed, out loud                                        |
 | 99  | Drill: Twitter feed + chat system            | Timed, out loud                                        |
 | 100 | Drill: distributed KV + STAR stories         | Polish & retrospective                                 |
+
+
 
 
 ---
