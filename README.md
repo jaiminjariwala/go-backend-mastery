@@ -7,33 +7,36 @@ Each day: learn the topic, **type the code myself** (no copy-paste), commit it u
 
 1. I'm following the [100-day plan](#-100-day-plan) in order - later phases build on earlier ones.
 2. Each day has a folder `day-NNN-<slug>/` with a `NOTES.md` template. I fill it in as I learn.
-3. Every phase ends with a **project**. No project = I haven't learned the topic.
-4. I check off topics in the phase checklists below as I master them.
-5. **Pace is flexible:** "100 days" is just the ordering. With free time, do 3-4 days' worth per day and finish in \~4 weeks. The checkboxes track real progress, not calendar days.
-
-> My rule: for every topic, be able to **explain it in 2 minutes** and **describe its trade-offs**.
+3. Every phase ends with a **project**.
+4. **Pace is flexible:** "100 days" is just the ordering. With free time, do 3-4 days' worth per day and finish in 4 weeks. The checkboxes track real progress, not calendar days.
 
 ---
+
+
 
 ## Phase overview
 
-| Phase | Days | Focus |
-| --- | --- | --- |
-| 1 | 1-12 | Go language fundamentals |
-| 2 | 13-22 | Go concurrency deep dive |
-| 3 | 23-26 | Go advanced: testing, profiling, GC |
-| 4 | 27-34 | Networking & API design |
-| 5 | 35-42 | SQL & relational databases |
-| 6 | 43-48 | NoSQL, Redis & caching |
-| 7 | 49-56 | System design fundamentals |
-| 8 | 57-70 | Distributed systems core |
-| 9 | 71-76 | Messaging & event-driven architecture |
-| 10 | 77-82 | Docker |
-| 11 | 83-92 | Kubernetes |
-| 12 | 93-97 | Microservices, security, observability, CI/CD |
-| 13 | 98-100 | System design interview drills |
+
+| Phase | Days   | Focus                                         |
+| ----- | ------ | --------------------------------------------- |
+| 1     | 1-12   | Go language fundamentals                      |
+| 2     | 13-22  | Go concurrency deep dive                      |
+| 3     | 23-26  | Go advanced: testing, profiling, GC           |
+| 4     | 27-34  | Networking & API design                       |
+| 5     | 35-42  | SQL & relational databases                    |
+| 6     | 43-48  | NoSQL, Redis & caching                        |
+| 7     | 49-56  | System design fundamentals                    |
+| 8     | 57-70  | Distributed systems core                      |
+| 9     | 71-76  | Messaging & event-driven architecture         |
+| 10    | 77-82  | Docker                                        |
+| 11    | 83-92  | Kubernetes                                    |
+| 12    | 93-97  | Microservices, security, observability, CI/CD |
+| 13    | 98-100 | System design interview drills                |
+
 
 ---
+
+
 
 ## Phase 1 - Go language fundamentals (Days 1-12)
 
@@ -60,9 +63,11 @@ Each day: learn the topic, **type the code myself** (no copy-paste), commit it u
 - [ ] `go vet`, `gofmt`/`gofumpt`, `staticcheck` basics
 - [ ] **Project:** CLI tool (e.g. todo manager / log analyzer) with subcommands, flags, and tests
 
+
+
 ## Phase 2 - Go concurrency deep dive (Days 13-22)
 
-- [ ] Goroutines: what they cost (\~2KB stacks), GMP scheduler model (G/M/P, work stealing), `GOMAXPROCS`
+- [ ] Goroutines: what they cost (2KB stacks), GMP scheduler model (G/M/P, work stealing), `GOMAXPROCS`
 - [ ] Channels: unbuffered (synchronous handoff) vs buffered semantics, blocking rules, zero value (`nil` channel blocks forever)
 - [ ] Channel idioms: signaling with `chan struct{}`, closing channels, `for range` over channels, who closes?
 - [ ] `select`: multiplexing, `default` for non-blocking ops, timeouts with `time.After`, random selection among ready cases
@@ -77,6 +82,8 @@ Each day: learn the topic, **type the code myself** (no copy-paste), commit it u
 - [ ] Graceful shutdown: signal handling + `http.Server.Shutdown` + draining workers
 - [ ] **Project:** concurrent web crawler with rate limiting, dedup, and graceful shutdown
 
+
+
 ## Phase 3 - Go advanced: testing, profiling, GC (Days 23-26)
 
 - [ ] Table-driven tests, subtests, test helpers (`t.Helper()`), test fixtures, `testify` vs stdlib
@@ -89,6 +96,8 @@ Each day: learn the topic, **type the code myself** (no copy-paste), commit it u
 - [ ] GC: tri-color mark & sweep, write barriers, pacer, `GOGC`, `GOMEMLIMIT`, GC latency vs throughput
 - [ ] `reflect` basics and costs; `unsafe` - what it is, why you (mostly) avoid it
 - [ ] **Project:** in-memory key-value store with HTTP API, benchmarks + pprof profile showing an optimization you made
+
+
 
 ## Phase 4 - Networking & API design (Days 27-34)
 
@@ -109,6 +118,8 @@ Each day: learn the topic, **type the code myself** (no copy-paste), commit it u
 - [ ] API gateways & BFF pattern
 - [ ] **Projects:** (1) REST API in **stdlib only** - no frameworks; (2) gRPC service with streaming; (3) L7 load balancer in Go
 
+
+
 ## Phase 5 - SQL & relational databases (Days 35-42)
 
 - [ ] Data modeling, normalization (1NF → BCNF), when to denormalize
@@ -124,6 +135,8 @@ Each day: learn the topic, **type the code myself** (no copy-paste), commit it u
 - [ ] Replication: streaming/logical, read replicas, replication lag handling
 - [ ] Partitioning & sharding strategies (range/hash), `pgBouncer`
 - [ ] **Project:** URL shortener backend on Postgres - schema, migrations, indexes, transactional click counting
+
+
 
 ## Phase 6 - NoSQL, Redis & caching (Days 43-48)
 
@@ -141,6 +154,8 @@ Each day: learn the topic, **type the code myself** (no copy-paste), commit it u
 - [ ] Elasticsearch basics (inverted index) - for search-type interview problems
 - [ ] **Projects:** (1) rate limiter service on Redis; (2) distributed cache with consistent hashing in Go
 
+
+
 ## Phase 7 - System design fundamentals (Days 49-56)
 
 - [ ] Back-of-envelope estimation: QPS, storage, bandwidth math; powers of 10 & latency numbers every engineer should know
@@ -156,6 +171,8 @@ Each day: learn the topic, **type the code myself** (no copy-paste), commit it u
 - [ ] Async architectures: queues, workers, schedulers
 - [ ] SLOs/SLIs/SLAs; RED and USE observability methods
 - [ ] **Drills:** estimate capacity for TinyURL, WhatsApp, YouTube (numbers on paper)
+
+
 
 ## Phase 8 - Distributed systems core (Days 57-70)
 
@@ -179,6 +196,8 @@ Each day: learn the topic, **type the code myself** (no copy-paste), commit it u
 - [ ] Byzantine fault tolerance basics (PBFT awareness); Jepsen-style thinking
 - [ ] **Capstone:** 3-node replicated key-value store with leader election + log replication in Go
 
+
+
 ## Phase 9 - Messaging & event-driven architecture (Days 71-76)
 
 - [ ] Kafka: topics, partitions, offsets, consumer groups, rebalancing
@@ -190,6 +209,8 @@ Each day: learn the topic, **type the code myself** (no copy-paste), commit it u
 - [ ] Event-driven patterns: event notification, event-carried state transfer, event sourcing, CQRS (implement a small event-sourced aggregate)
 - [ ] Outbox + CDC (Debezium concept), poison messages & DLQ, message deduplication
 - [ ] **Projects:** (1) order service with Kafka in Go; (2) notification fan-out service (email/SMS/push) with retries & DLQ
+
+
 
 ## Phase 10 - Docker (Days 77-82)
 
@@ -203,6 +224,8 @@ Each day: learn the topic, **type the code myself** (no copy-paste), commit it u
 - [ ] Resource limits (`--memory`, `--cpus`), healthchecks, restart policies
 - [ ] Security: non-root users, read-only filesystems, no secrets in layers, secret mounts
 - [ ] **Project:** production-grade container setup for your Phase 4 API - hardened, scanned, Compose-orchestrated
+
+
 
 ## Phase 11 - Kubernetes (Days 83-92)
 
@@ -225,6 +248,8 @@ Each day: learn the topic, **type the code myself** (no copy-paste), commit it u
 - [ ] `kubectl` essentials, `k9s`; GitOps preview (ArgoCD)
 - [ ] **Project:** deploy your microservice stack to K8s - manifests + Helm chart + HPA + Ingress + NetworkPolicies
 
+
+
 ## Phase 12 - Microservices, security, observability, CI/CD (Days 93-97)
 
 - [ ] Decomposition: DDD bounded contexts, strangler fig pattern, database-per-service vs shared
@@ -238,6 +263,8 @@ Each day: learn the topic, **type the code myself** (no copy-paste), commit it u
 - [ ] IaC & GitOps: Terraform basics, ArgoCD
 - [ ] 12-factor app methodology
 - [ ] **Project:** production-readiness checklist applied to one service - auth, metrics, traces, dashboards, alerts, pipeline
+
+
 
 ## Phase 13 - System design interview drills (Days 98-100)
 
@@ -268,112 +295,118 @@ Classic FAANG system design problems - I'll do each **timed (35-45 min)**, out l
 
 ---
 
+
+
 ## 🗓 100-day plan
 
-| Day | Focus | Build / Do |
-| --- | --- | --- |
-| 1 | Go setup, modules, toolchain | Hello world CLI + `go vet` clean |
-| 2 | Types, zero values, constants, iota | Exercises: iota enum, shadowing traps |
-| 3 | Functions, closures, variadic | Higher-order function utilities |
-| 4 | Pointers, structs, methods, embedding | Shape hierarchy via embedding |
-| 5 | Slices internals | Implement `Filter`/`Map` without `append` bugs |
-| 6 | Maps, strings, runes, utf8 | Word-frequency counter |
-| 7 | Interfaces | `io.Writer` implementations; stringer |
-| 8 | Errors: wrap, Is/As | Error package with domain errors |
-| 9 | Generics | Generic stack, map/filter with constraints |
-| 10 | Packages, init, defer deep dive | Multi-package project layout |
-| 11 | io, encoding/json, time | JSON log parser CLI |
-| 12 | **Project:** CLI tool | Todo CLI with tests |
-| 13 | Goroutines + GMP model | Goroutine fan-out benchmark |
-| 14 | Channels: buffered vs unbuffered | Blocking-behavior experiments |
-| 15 | Channel idioms: close, range, nil | Pipeline stage helpers |
-| 16 | select + timeouts | Timeout/cancel patterns |
-| 17 | Pipelines, fan-out/fan-in | Parallel image-resize-style pipeline |
-| 18 | Mutex/RWMutex, WaitGroup, Once | Concurrent counter variants |
-| 19 | sync.Map, Pool, atomics | Object pool benchmark |
-| 20 | context | Request-scoped timeout propagation |
-| 21 | Memory model + race detector | Find & fix races with `-race` |
-| 22 | **Project:** concurrent web crawler | Crawler with dedup + graceful shutdown |
-| 23 | Testing: table-driven, fuzzing | Fuzz a parser you wrote |
-| 24 | Benchmarks + pprof | Profile & optimize the KV store |
-| 25 | GC internals, escape analysis | Reduce allocations in hot path |
-| 26 | **Project:** in-memory KV + HTTP API | With benchmarks |
-| 27 | TCP/IP, sockets | TCP echo + chat server |
-| 28 | DNS, TLS, HTTP/1.1 | Inspect real handshakes (Wireshark/`openssl s_client`) |
-| 29 | REST with stdlib only | CRUD API, no frameworks |
-| 30 | Middleware | Logging/auth/recovery/request-ID chain |
-| 31 | API design: idempotency, pagination, OpenAPI | Idempotency-key middleware |
-| 32 | gRPC + protobuf | Streaming gRPC service |
-| 33 | WebSockets + SSE | Realtime feed endpoint |
-| 34 | **Project:** L7 load balancer | Round-robin, least-conn, consistent hash |
-| 35 | Data modeling, normalization | Schema for URL shortener |
-| 36 | Indexes + EXPLAIN ANALYZE | Index experiments on 1M rows |
-| 37 | Transactions + isolation levels | Money-transfer with tx |
-| 38 | MVCC, locking, deadlocks | Reproduce & resolve a deadlock |
-| 39 | Joins, window functions, CTEs | Analytics queries |
-| 40 | Pooling (pgx), N+1 | Fix N+1 in an API |
-| 41 | Migrations | golang-migrate workflow |
-| 42 | **Project:** URL shortener on Postgres | Full backend |
-| 43 | Redis data structures | Rebuild Phase-6 mini apps |
-| 44 | Redis Streams, Lua, pipelines | Job queue on Streams |
-| 45 | Caching patterns + singleflight | Cache-aside with stampede protection |
-| 46 | Cluster/Sentinel, eviction | Failover experiment |
-| 47 | MongoDB / Cassandra data models | Model a feed in each |
-| 48 | **Project:** distributed cache | Consistent-hashing nodes |
-| 49 | Estimation math + latency numbers | Estimate TinyURL/WhatsApp/YouTube |
-| 50 | CAP/PACELC, consistency models | 2-minute explanations, recorded |
-| 51 | Caching layers, CDN | CDN behavior notes |
-| 52 | Retries/backoff/jitter, circuit breaker | `gobreaker`-style breaker from scratch |
-| 53 | Rate limiting algorithms | All 4 algorithms in Go |
-| 54 | LBs, API gateways | Compare L4 vs L7 |
-| 55 | DB scaling: replicas, sharding | Shard-key design exercises |
-| 56 | Async, SLOs, p99 | Define SLIs for your API |
-| 57 | Fallacies, Lamport/vector clocks | Implement vector clocks |
-| 58 | Ordering, idempotency | Idempotent worker design |
-| 59 | Quorums W+R>N | Quorum KV prototype |
-| 60 | Replication topologies | Compare leader-follower vs leaderless |
-| 61 | Consistent hashing | Ring implementation + tests |
-| 62 | Paxos intuition | Write the 2-minute explanation |
-| 63 | Raft: leader election | Implement election |
-| 64 | Raft: log replication | Replicate a log |
-| 65 | Gossip/SWIM | Membership prototype |
-| 66 | Distributed locks + fencing | Fencing-token lock service |
-| 67 | 2PC vs Saga | Saga orchestrator |
-| 68 | Outbox + idempotent consumers | Outbox with Postgres |
-| 69 | CRDTs | G-Counter, OR-Set |
-| 70 | **Capstone:** 3-node replicated KV | Raft-lite in Go |
-| 71 | Kafka: topics, partitions, groups | Local Kafka via Docker |
-| 72 | Kafka: ISR, EOS semantics | Idempotent producer demo |
-| 73 | Event-driven order service | Go + Kafka |
-| 74 | RabbitMQ: exchanges, DLX | Routing topologies |
-| 75 | NATS JetStream; event sourcing + CQRS | Event-sourced aggregate |
-| 76 | **Project:** notification fan-out | Retries + DLQ |
-| 77 | Dockerfile, layers, multi-stage | Distroless Go image |
-| 78 | Volumes, networking | Multi-network experiments |
-| 79 | Docker Compose | Full stack: Go + PG + Redis + Kafka |
-| 80 | Registries, scanning | Trivy scan your images |
-| 81 | Namespaces/cgroups | Inspect isolation primitives |
-| 82 | **Project:** hardened container setup | Non-root, read-only FS, scanned |
-| 83 | K8s architecture; kind cluster | Cluster up, deploy nginx |
-| 84 | Pods, labels, namespaces | Deploy your Go API |
-| 85 | Deployments, rolling updates | Rollout + rollback drill |
-| 86 | Services, Ingress | Expose API via Ingress |
-| 87 | ConfigMaps, Secrets | 12-factor config |
-| 88 | Probes, resources, HPA | Load-test autoscaling |
-| 89 | StatefulSets, PV/PVC | Postgres on K8s |
-| 90 | RBAC, NetworkPolicies | Default-deny policy |
-| 91 | Helm | Chart for your app |
-| 92 | **Project:** full stack on K8s | Manifests + Helm + HPA + Ingress |
-| 93 | Microservices decomposition | DDD context map of a shop |
-| 94 | Auth: OAuth2/OIDC, JWT in Go | Auth service issuing JWTs |
-| 95 | mTLS, OWASP API Top 10 | Threat-model your API |
-| 96 | Observability: slog, Prometheus, OTel | Instrumented service |
-| 97 | CI/CD: GitHub Actions, ArgoCD | Pipeline: test → scan → deploy |
-| 98 | Drill: URL shortener + rate limiter | Timed, out loud |
-| 99 | Drill: Twitter feed + chat system | Timed, out loud |
-| 100 | Drill: distributed KV + STAR stories | Polish & retrospective |
+
+| Day | Focus                                        | Build / Do                                             |
+| --- | -------------------------------------------- | ------------------------------------------------------ |
+| 1   | Go setup, modules, toolchain                 | Hello world CLI + `go vet` clean                       |
+| 2   | Types, zero values, constants, iota          | Exercises: iota enum, shadowing traps                  |
+| 3   | Functions, closures, variadic                | Higher-order function utilities                        |
+| 4   | Pointers, structs, methods, embedding        | Shape hierarchy via embedding                          |
+| 5   | Slices internals                             | Implement `Filter`/`Map` without `append` bugs         |
+| 6   | Maps, strings, runes, utf8                   | Word-frequency counter                                 |
+| 7   | Interfaces                                   | `io.Writer` implementations; stringer                  |
+| 8   | Errors: wrap, Is/As                          | Error package with domain errors                       |
+| 9   | Generics                                     | Generic stack, map/filter with constraints             |
+| 10  | Packages, init, defer deep dive              | Multi-package project layout                           |
+| 11  | io, encoding/json, time                      | JSON log parser CLI                                    |
+| 12  | **Project:** CLI tool                        | Todo CLI with tests                                    |
+| 13  | Goroutines + GMP model                       | Goroutine fan-out benchmark                            |
+| 14  | Channels: buffered vs unbuffered             | Blocking-behavior experiments                          |
+| 15  | Channel idioms: close, range, nil            | Pipeline stage helpers                                 |
+| 16  | select + timeouts                            | Timeout/cancel patterns                                |
+| 17  | Pipelines, fan-out/fan-in                    | Parallel image-resize-style pipeline                   |
+| 18  | Mutex/RWMutex, WaitGroup, Once               | Concurrent counter variants                            |
+| 19  | sync.Map, Pool, atomics                      | Object pool benchmark                                  |
+| 20  | context                                      | Request-scoped timeout propagation                     |
+| 21  | Memory model + race detector                 | Find & fix races with `-race`                          |
+| 22  | **Project:** concurrent web crawler          | Crawler with dedup + graceful shutdown                 |
+| 23  | Testing: table-driven, fuzzing               | Fuzz a parser you wrote                                |
+| 24  | Benchmarks + pprof                           | Profile & optimize the KV store                        |
+| 25  | GC internals, escape analysis                | Reduce allocations in hot path                         |
+| 26  | **Project:** in-memory KV + HTTP API         | With benchmarks                                        |
+| 27  | TCP/IP, sockets                              | TCP echo + chat server                                 |
+| 28  | DNS, TLS, HTTP/1.1                           | Inspect real handshakes (Wireshark/`openssl s_client`) |
+| 29  | REST with stdlib only                        | CRUD API, no frameworks                                |
+| 30  | Middleware                                   | Logging/auth/recovery/request-ID chain                 |
+| 31  | API design: idempotency, pagination, OpenAPI | Idempotency-key middleware                             |
+| 32  | gRPC + protobuf                              | Streaming gRPC service                                 |
+| 33  | WebSockets + SSE                             | Realtime feed endpoint                                 |
+| 34  | **Project:** L7 load balancer                | Round-robin, least-conn, consistent hash               |
+| 35  | Data modeling, normalization                 | Schema for URL shortener                               |
+| 36  | Indexes + EXPLAIN ANALYZE                    | Index experiments on 1M rows                           |
+| 37  | Transactions + isolation levels              | Money-transfer with tx                                 |
+| 38  | MVCC, locking, deadlocks                     | Reproduce & resolve a deadlock                         |
+| 39  | Joins, window functions, CTEs                | Analytics queries                                      |
+| 40  | Pooling (pgx), N+1                           | Fix N+1 in an API                                      |
+| 41  | Migrations                                   | golang-migrate workflow                                |
+| 42  | **Project:** URL shortener on Postgres       | Full backend                                           |
+| 43  | Redis data structures                        | Rebuild Phase-6 mini apps                              |
+| 44  | Redis Streams, Lua, pipelines                | Job queue on Streams                                   |
+| 45  | Caching patterns + singleflight              | Cache-aside with stampede protection                   |
+| 46  | Cluster/Sentinel, eviction                   | Failover experiment                                    |
+| 47  | MongoDB / Cassandra data models              | Model a feed in each                                   |
+| 48  | **Project:** distributed cache               | Consistent-hashing nodes                               |
+| 49  | Estimation math + latency numbers            | Estimate TinyURL/WhatsApp/YouTube                      |
+| 50  | CAP/PACELC, consistency models               | 2-minute explanations, recorded                        |
+| 51  | Caching layers, CDN                          | CDN behavior notes                                     |
+| 52  | Retries/backoff/jitter, circuit breaker      | `gobreaker`-style breaker from scratch                 |
+| 53  | Rate limiting algorithms                     | All 4 algorithms in Go                                 |
+| 54  | LBs, API gateways                            | Compare L4 vs L7                                       |
+| 55  | DB scaling: replicas, sharding               | Shard-key design exercises                             |
+| 56  | Async, SLOs, p99                             | Define SLIs for your API                               |
+| 57  | Fallacies, Lamport/vector clocks             | Implement vector clocks                                |
+| 58  | Ordering, idempotency                        | Idempotent worker design                               |
+| 59  | Quorums W+R>N                                | Quorum KV prototype                                    |
+| 60  | Replication topologies                       | Compare leader-follower vs leaderless                  |
+| 61  | Consistent hashing                           | Ring implementation + tests                            |
+| 62  | Paxos intuition                              | Write the 2-minute explanation                         |
+| 63  | Raft: leader election                        | Implement election                                     |
+| 64  | Raft: log replication                        | Replicate a log                                        |
+| 65  | Gossip/SWIM                                  | Membership prototype                                   |
+| 66  | Distributed locks + fencing                  | Fencing-token lock service                             |
+| 67  | 2PC vs Saga                                  | Saga orchestrator                                      |
+| 68  | Outbox + idempotent consumers                | Outbox with Postgres                                   |
+| 69  | CRDTs                                        | G-Counter, OR-Set                                      |
+| 70  | **Capstone:** 3-node replicated KV           | Raft-lite in Go                                        |
+| 71  | Kafka: topics, partitions, groups            | Local Kafka via Docker                                 |
+| 72  | Kafka: ISR, EOS semantics                    | Idempotent producer demo                               |
+| 73  | Event-driven order service                   | Go + Kafka                                             |
+| 74  | RabbitMQ: exchanges, DLX                     | Routing topologies                                     |
+| 75  | NATS JetStream; event sourcing + CQRS        | Event-sourced aggregate                                |
+| 76  | **Project:** notification fan-out            | Retries + DLQ                                          |
+| 77  | Dockerfile, layers, multi-stage              | Distroless Go image                                    |
+| 78  | Volumes, networking                          | Multi-network experiments                              |
+| 79  | Docker Compose                               | Full stack: Go + PG + Redis + Kafka                    |
+| 80  | Registries, scanning                         | Trivy scan your images                                 |
+| 81  | Namespaces/cgroups                           | Inspect isolation primitives                           |
+| 82  | **Project:** hardened container setup        | Non-root, read-only FS, scanned                        |
+| 83  | K8s architecture; kind cluster               | Cluster up, deploy nginx                               |
+| 84  | Pods, labels, namespaces                     | Deploy your Go API                                     |
+| 85  | Deployments, rolling updates                 | Rollout + rollback drill                               |
+| 86  | Services, Ingress                            | Expose API via Ingress                                 |
+| 87  | ConfigMaps, Secrets                          | 12-factor config                                       |
+| 88  | Probes, resources, HPA                       | Load-test autoscaling                                  |
+| 89  | StatefulSets, PV/PVC                         | Postgres on K8s                                        |
+| 90  | RBAC, NetworkPolicies                        | Default-deny policy                                    |
+| 91  | Helm                                         | Chart for your app                                     |
+| 92  | **Project:** full stack on K8s               | Manifests + Helm + HPA + Ingress                       |
+| 93  | Microservices decomposition                  | DDD context map of a shop                              |
+| 94  | Auth: OAuth2/OIDC, JWT in Go                 | Auth service issuing JWTs                              |
+| 95  | mTLS, OWASP API Top 10                       | Threat-model your API                                  |
+| 96  | Observability: slog, Prometheus, OTel        | Instrumented service                                   |
+| 97  | CI/CD: GitHub Actions, ArgoCD                | Pipeline: test → scan → deploy                         |
+| 98  | Drill: URL shortener + rate limiter          | Timed, out loud                                        |
+| 99  | Drill: Twitter feed + chat system            | Timed, out loud                                        |
+| 100 | Drill: distributed KV + STAR stories         | Polish & retrospective                                 |
+
 
 ---
+
+
 
 ## 🏗 Capstone projects
 
@@ -386,6 +419,8 @@ Classic FAANG system design problems - I'll do each **timed (35-45 min)**, out l
 7. **K8s-deployed microservice** - Helm chart, HPA, mTLS, dashboards, CI/CD
 
 ---
+
+
 
 ## 📌 Backlog - topics to add later
 
