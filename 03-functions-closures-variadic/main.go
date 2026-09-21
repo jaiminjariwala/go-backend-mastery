@@ -82,4 +82,6 @@ func main() {
 	fmt.Println(c1(), c1(), c1())	// 1, 2, 3	(same captured count, bumped each call)
 	c2 := counter()
 	fmt.Println(c2())	// 1 (fresh count, independent of c1)
+
+	demoFunctionsAsValues()
 }
