@@ -84,4 +84,5 @@ func main() {
 	fmt.Println(c2())	// 1 (fresh count, independent of c1)
 
 	demoFunctionsAsValues()
+	demoAnonymousFunctions()
 }
