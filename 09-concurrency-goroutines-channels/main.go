@@ -7,4 +7,8 @@ func main() {
 
 	// uncomment to watch Go catch a deadlock live
 	// demoDeadlock()
+
+	demoBuffered()
+	demoCloseRange()
+	demoOkIdion()
 }
