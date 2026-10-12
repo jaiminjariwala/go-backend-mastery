@@ -7,7 +7,11 @@ Small, focused exercises with explanations, runnable code, and tests. These labs
 ```text
 14-backend-labs/
 ├── concepts/
-│   └── 01-http-request-response/
+│   ├── 01-http-request-response/
+│   │   ├── README.md
+│   │   ├── handler.go
+│   │   └── handler_test.go
+│   └── 02-json-validation/
 │       ├── README.md
 │       ├── handler.go
 │       └── handler_test.go
@@ -28,6 +32,7 @@ Then, in another terminal:
 
 ```sh
 curl -i 'http://127.0.0.1:8080/api/hello?name=Jaimin'
+curl -i http://127.0.0.1:8080/api/greet -H 'Content-Type: application/json' -d '{"name":"Jaimin"}'
 ```
 
 The learning process is explanation → implementation → tests → code review.
