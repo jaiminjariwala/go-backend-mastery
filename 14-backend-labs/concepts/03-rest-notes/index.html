@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backend labs · Notes</title>
+<style>
+  body {
+    font: 17px system-ui, sans-serif;
+    color: #111112;
+    background: #fafafa;
+    margin: 0
+  }
+
+  main {
+    max-width: 720px;
+    margin: 64px auto;
+    padding: 24px
+  }
+
+  small,
+  p {
+    color: #696b6e
+  }
+
+  h1 {
+    font-size: 32px
+  }
+
+  form {
+    display: flex;
+    gap: 12px
+  }
+
+  input,
+  button {
+    font: inherit;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px
+  }
+
+  input {
+    flex: 1;
+    min-width: 0
+  }
+
+  button {
+    cursor: pointer;
+    background: #2962cd;
+    color: white
+  }
+
+  button:disabled {
+    opacity: .5
+  }
+
+  li {
+    padding: 16px;
+    border-bottom: 1px solid #ddd;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere
+  }
+
+  ul {
+    list-style: none;
+    padding: 0
+  }
+
+  pre {
+    background: #eee;
+    padding: 16px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere
+  }
+
+  a {
+    color: #2962cd
+  }
+
+  :focus-visible {
+    outline: 3px solid #2962cd;
+    outline-offset: 3px
+  }
+</style>
+<main>
+  <small>Go backend mastery / Lesson 03</small>
+  <h1>Persistent notes</h1>
+  <p>Browser → Go API → PostgreSQL. Restart the Go server, refresh, and check that your notes remain.</p>
+  <form id="form"><label for="text" hidden>Note text</label><input id="text" aria-label="Note text"
+      placeholder="What are you learning?" required maxlength="200"><button id="save">Save note</button></form>
+  <p><button id="refresh" type="button">Refresh notes</button></p>
+  <p id="status" role="status"></p>
+  <ul id="notes"></ul>
+  <h2>Last API response</h2>
+  <pre id="output">Loading…</pre>
+  <p>Local learning demo, no login. Do not expose this server publicly or store sensitive notes.</p>
+</main>
+<script>
+  const status = document.querySelector('#status');
+  const output = document.querySelector('#output');
+  async function send(method, payload, path = '/api/notes') {
+    const options = { method };
+    if (payload !== undefined) {
+      options.headers = { 'Content-Type': 'application/json' };
+      options.body = JSON.stringify(payload);
+    }
+    const response = await fetch(path, options);
+    const text = await response.text();
+    output.textContent = method + ' ' + path + '\nStatus: ' + response.status + '\n' + text;
+    if (!response.ok) throw new Error('Request failed (' + response.status + '). Check Go configuration and schema setup.');
+    return response.status === 204 ? null : JSON.parse(text);
+  }
+  async function list() {
+    const notes = await send('GET');
+    document.querySelector('#notes').replaceChildren();
+    for (const note of notes) {
+      const item = document.createElement('li');
+      item.textContent = '#' + note.id + ' · ' + note.text;
+      for (const action of ['Edit', 'Delete']) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = action;
+        button.style.marginLeft = '12px';
+        button.setAttribute('aria-label', action + ' note ' + note.id);
+        button.addEventListener('click', () => {
+          if (item.querySelector('form')) return;
+          const editor = document.createElement('form');
+          editor.style.marginTop = '12px';
+          editor.style.flexWrap = 'wrap';
+          const input = document.createElement('input');
+          if (action === 'Edit') {
+            input.value = note.text;
+            input.required = true;
+            input.setAttribute('aria-label', 'New text for note ' + note.id);
+            editor.append(input);
+          } else {
+            const question = document.createElement('span');
+            question.textContent = 'Permanently delete note #' + note.id + '?';
+            editor.append(question);
+          }
+          const submit = document.createElement('button');
+          submit.type = 'submit';
+          submit.textContent = action === 'Edit' ? 'Save changes' : 'Confirm delete';
+          const cancel = document.createElement('button');
+          cancel.type = 'button';
+          cancel.textContent = 'Cancel';
+          cancel.addEventListener('click', () => { editor.remove(); button.focus(); });
+          editor.append(submit, cancel);
+          editor.addEventListener('submit', async event => {
+            event.preventDefault();
+            submit.disabled = true;
+            cancel.disabled = true;
+            try {
+              await send(action === 'Edit' ? 'PUT' : 'DELETE',
+                action === 'Edit' ? {text: input.value} : undefined, '/api/notes/' + note.id);
+              const result = output.textContent;
+              await list();
+              output.textContent = result;
+            } catch (error) { status.textContent = error.message; }
+            finally { submit.disabled = false; cancel.disabled = false; }
+          });
+          item.append(editor);
+          if (action === 'Edit') input.focus();
+          else cancel.focus();
+        });
+        item.append(button);
+      }
+      document.querySelector('#notes').append(item);
+    }
+    status.textContent = notes.length + ' saved notes';
+  }
+  document.querySelector('#form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const save = document.querySelector('#save');
+    save.disabled = true;
+    try {
+      await send('POST', { text: document.querySelector('#text').value });
+      const createResponse = output.textContent;
+      document.querySelector('#text').value = '';
+      await list();
+      output.textContent = createResponse;
+    } catch (error) { status.textContent = error.message; }
+    finally { save.disabled = false; }
+  });
+  document.querySelector('#refresh').addEventListener('click', () => list().catch(error => status.textContent = error.message));
+  list().catch(error => status.textContent = error.message);
+</script>
+
+</html>
