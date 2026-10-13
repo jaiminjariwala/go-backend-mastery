@@ -11,7 +11,11 @@ Small, focused exercises with explanations, runnable code, and tests. These labs
 │   │   ├── README.md
 │   │   ├── handler.go
 │   │   └── handler_test.go
-│   └── 02-json-validation/
+│   ├── 02-json-validation/
+│   │   ├── README.md
+│   │   ├── handler.go
+│   │   └── handler_test.go
+│   └── 03-rest-notes/
 │       ├── README.md
 │       ├── handler.go
 │       └── handler_test.go
@@ -34,5 +38,7 @@ Then, in another terminal:
 curl -i 'http://127.0.0.1:8080/api/hello?name=Jaimin'
 curl -i http://127.0.0.1:8080/api/greet -H 'Content-Type: application/json' -d '{"name":"Jaimin"}'
 ```
+
+Lesson 3 uses Supabase-hosted PostgreSQL and a local browser form, not curl. Follow `concepts/03-rest-notes/README.md` for database setup, then open http://127.0.0.1:8080/concepts/notes.
 
 The learning process is explanation → implementation → tests → code review.
