@@ -13,11 +13,13 @@ import (
 	httpbasics "github.com/jaiminjariwala/go-backend-mastery/14-backend-labs/concepts/01-http-request-response"
 	jsonbasics "github.com/jaiminjariwala/go-backend-mastery/14-backend-labs/concepts/02-json-validation"
 	notes "github.com/jaiminjariwala/go-backend-mastery/14-backend-labs/concepts/03-rest-notes"
+	middleware "github.com/jaiminjariwala/go-backend-mastery/14-backend-labs/concepts/05-middleware"
 )
 
 // main takes no parameters and returns nothing. It starts the local lab server.
 func main() {
 	mux := http.NewServeMux()
+	middleware.Register(mux)
 	mux.HandleFunc("/api/hello", httpbasics.Hello)
 	mux.HandleFunc("/api/greet", jsonbasics.Greet)
 	mux.HandleFunc("GET /concepts/notes", notes.Page)
@@ -46,10 +48,11 @@ func main() {
 
 	server := &http.Server{
 		Addr:              "127.0.0.1:8080",
-		Handler:           mux,
+		Handler:           middleware.Logging(log.Default(), mux),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 	log.Println("HTTP lesson: http://127.0.0.1:8080/api/hello?name=Jaimin")
 	log.Println("JSON lesson: POST http://127.0.0.1:8080/api/greet")
+	log.Println("Middleware lesson: http://127.0.0.1:8080/concepts/middleware")
 	log.Fatal(server.ListenAndServe())
 }

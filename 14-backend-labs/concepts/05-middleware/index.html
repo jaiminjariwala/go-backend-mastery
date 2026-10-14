@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 05 · Simple middleware</title>
+  <style>
+    body {
+      font: 18px system-ui, sans-serif;
+      color: #111112;
+      background: #fafafa;
+      margin: 0;
+    }
+
+    main {
+      max-width: 720px;
+      margin: 48px auto;
+      padding: 24px;
+    }
+
+    p {
+      line-height: 1.6;
+    }
+
+    button {
+      font: inherit;
+      padding: 12px 18px;
+      background: #2962cd;
+      color: white;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    pre {
+      background: #eee;
+      padding: 20px;
+      white-space: pre-wrap;
+    }
+
+    :focus-visible {
+      outline: 3px solid #2962cd;
+      outline-offset: 3px;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <p>Lesson 05 · <a href="/concepts/notes">Notes app</a></p>
+    <h1>Middleware: before and after</h1>
+    <p>A bank guard records a visit; the employee does the banking job. Here, middleware times the visit, while the
+      handler sends a greeting.</p>
+    <pre>You click the button
+          │
+          ▼
+Middleware: start timer
+          │
+          ▼
+Handler: send a greeting
+          │
+          ▼
+Middleware: write method, path,
+and elapsed time to the Go terminal</pre>
+    <button id="send">Send a request</button>
+    <pre id="result" role="status">Click the button, then check your Go terminal.</pre>
+    <p>The browser shows the handler's reply. The terminal shows the middleware's log. Request IDs and panic recovery
+      are deferred until this basic flow is clear.</p>
+  </main>
+  <script>
+    const button = document.querySelector('#send');
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      try {
+        const response = await fetch('/api/middleware/success');
+        document.querySelector('#result').textContent =
+          'Handler response (' + response.status + '):\n' + await response.text() +
+          '\nMiddleware wrote a separate timing log in your Go terminal.';
+      } catch (error) {
+        document.querySelector('#result').textContent = error.message;
+      } finally { button.disabled = false; }
+    });
+  </script>
+</body>
+
+</html>
