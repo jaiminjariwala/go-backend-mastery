@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Short links · Go Backend Mastery</title>
+  <style>
+    body {
+      font: 17px system-ui, sans-serif;
+      background: #fafafa;
+      color: #111112;
+      margin: 0
+    }
+
+    main {
+      max-width: 880px;
+      margin: 64px auto;
+      padding: 24px
+    }
+
+    p,
+    small {
+      color: #696b6e;
+      line-height: 1.6
+    }
+
+    h1 {
+      font-size: 36px
+    }
+
+    form {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap
+    }
+
+    input,
+    button {
+      font: inherit;
+      padding: 13px;
+      border: 1px solid #ddd;
+      border-radius: 8px
+    }
+
+    input {
+      flex: 1;
+      min-width: 220px
+    }
+
+    button {
+      background: #2962cd;
+      color: white;
+      cursor: pointer
+    }
+
+    button:disabled {
+      opacity: .5
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%
+    }
+
+    td,
+    th {
+      padding: 16px 8px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+      overflow-wrap: anywhere
+    }
+
+    a {
+      color: #2962cd
+    }
+
+    pre {
+      background: #eee;
+      padding: 18px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere
+    }
+
+    :focus-visible {
+      outline: 3px solid #2962cd;
+      outline-offset: 3px
+    }
+
+    .scroll {
+      overflow: auto
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <small>Go backend mastery / Project 15</small>
+    <h1>Make a long link short.</h1>
+    <p>I save a URL, receive a short code, and use it to redirect a browser. PostgreSQL keeps the mapping after a server
+      restart.</p>
+    <form id="form"><input id="url" type="url" aria-label="Original URL" placeholder="https://example.com/a/long/path"
+        required maxlength="2048"><button id="save">Shorten URL</button></form>
+    <p id="status" role="status"></p>
+    <h2>My latest 50 links</h2>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Short link</th>
+            <th>Original URL</th>
+          </tr>
+        </thead>
+        <tbody id="links"></tbody>
+      </table>
+    </div>
+    <h2>Last creation response</h2>
+    <pre id="response">No link created yet.</pre>
+    <p>Local learning app. Links are not private. No sign-in or abuse prevention yet; do not deploy publicly or store
+      sensitive URLs.</p>
+  </main>
+  <script>
+    const status = document.querySelector('#status');
+    async function list() {
+      const response = await fetch('/api/links');
+      const links = await response.json();
+      if (!response.ok) throw new Error(links.error);
+      document.querySelector('#links').replaceChildren();
+      for (const link of links) {
+        const row = document.createElement('tr');
+        const shortCell = document.createElement('td');
+        const short = document.createElement('a');
+        short.href = '/s/' + encodeURIComponent(link.code);
+        short.textContent = location.origin + short.getAttribute('href');
+        short.target = '_blank'; short.rel = 'noopener noreferrer';
+        shortCell.append(short);
+        const original = document.createElement('td');
+        original.textContent = link.url;
+        row.append(shortCell, original); document.querySelector('#links').append(row);
+      }
+      status.textContent = links.length + ' recent links loaded.';
+    }
+    document.querySelector('#form').addEventListener('submit', async event => {
+      event.preventDefault();
+      const button = document.querySelector('#save'); button.disabled = true;
+      try {
+        const response = await fetch('/api/links', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: document.querySelector('#url').value }) });
+        const result = await response.json();
+        document.querySelector('#response').textContent = 'POST /api/links → ' + response.status + '\n' + JSON.stringify(result, null, 2);
+        if (!response.ok) throw new Error(result.error);
+        await list();
+      } catch (error) { status.textContent = error.message; }
+      finally { button.disabled = false; }
+    });
+    list().catch(error => status.textContent = error.message);
+  </script>
+</body>
+
+</html>
