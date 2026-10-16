@@ -3,9 +3,12 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib" // Register the pgx PostgreSQL driver.
@@ -14,12 +17,14 @@ import (
 	jsonbasics "github.com/jaiminjariwala/go-backend-mastery/14-backend-labs/concepts/02-json-validation"
 	notes "github.com/jaiminjariwala/go-backend-mastery/14-backend-labs/concepts/03-rest-notes"
 	middleware "github.com/jaiminjariwala/go-backend-mastery/14-backend-labs/concepts/05-middleware"
+	contextbasics "github.com/jaiminjariwala/go-backend-mastery/14-backend-labs/concepts/06-context-deadlines-cancellation-graceful-shutdown"
 )
 
 // main takes no parameters and returns nothing. It starts the local lab server.
 func main() {
 	mux := http.NewServeMux()
 	middleware.Register(mux)
+	contextbasics.Register(mux)
 	mux.HandleFunc("/api/hello", httpbasics.Hello)
 	mux.HandleFunc("/api/greet", jsonbasics.Greet)
 	mux.HandleFunc("GET /concepts/notes", notes.Page)
@@ -54,5 +59,24 @@ func main() {
 	log.Println("HTTP lesson: http://127.0.0.1:8080/api/hello?name=Jaimin")
 	log.Println("JSON lesson: POST http://127.0.0.1:8080/api/greet")
 	log.Println("Middleware lesson: http://127.0.0.1:8080/concepts/middleware")
-	log.Fatal(server.ListenAndServe())
+	// Control+C/SIGTERM stops new connections and drains active requests.
+	ctx, stopSignals := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stopSignals()
+	finished := make(chan error, 1)
+	go func() { finished <- server.ListenAndServe() }()
+	select {
+	case err := <-finished:
+		if !errors.Is(err, http.ErrServerClosed) {
+			log.Println("Server failed:", err)
+		}
+	case <-ctx.Done():
+		stopSignals() // A second interrupt can terminate immediately.
+		log.Println("Shutdown: no new connections; waiting up to 12 seconds for active requests")
+		if err := contextbasics.Stop(server, 12*time.Second); err != nil {
+			log.Println("Shutdown deadline reached; remaining connections closed")
+		} else {
+			log.Println("Shutdown complete: active requests finished")
+		}
+		<-finished
+	}
 }

@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson 06 · Cancellation</title>
+  <style>
+    body {
+      font: 18px system-ui, sans-serif;
+      background: #fafafa;
+      color: #111112;
+      margin: 0;
+    }
+
+    main {
+      max-width: 760px;
+      margin: 48px auto;
+      padding: 24px;
+    }
+
+    p {
+      line-height: 1.6;
+    }
+
+    button {
+      font: inherit;
+      padding: 12px;
+      margin: 5px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button[data-task] {
+      background: #2962cd;
+      color: white;
+    }
+
+    button:disabled {
+      opacity: .5;
+      cursor: default;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      background: #eee;
+      padding: 20px;
+    }
+
+    :focus-visible {
+      outline: 3px solid #2962cd;
+      outline-offset: 3px;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <p>Lesson 06 · <a href="/concepts/middleware">Middleware</a></p>
+    <h1>“Stop preparing my order”</h1>
+    <p>You order food. The kitchen starts preparing it. If you cancel, the waiter tells the kitchen to stop. A request's
+      context carries that stop signal; the work must listen to it.</p>
+    <pre>Start a task
+     │
+     ▼
+Server waits for whichever happens first:
+     │
+     ├── Work finishes → return a successful reply
+     ├── Deadline arrives → stop work and return a timeout reply
+     └── You cancel → browser stops waiting;
+         server detects cancellation and stops work</pre>
+    <button data-task="finish">Finish in 1 second</button>
+    <button data-task="timeout">5-second task, 2-second limit</button>
+    <button data-task="cancel">Start 10-second task</button>
+    <button id="cancel" disabled>Cancel current request</button>
+    <pre id="result" role="status">Choose a task.</pre>
+    <p>After canceling, check the Go terminal for “client canceled; task stopped early”. The browser cannot receive
+      confirmation on a request it has aborted. These tasks are real interruptible waits, not database writes. Graceful
+      shutdown is implemented too: start the 10-second task, then press Control+C in the Go terminal without canceling the browser request. The server stops accepting new connections and allows up to 12 seconds for active requests to finish. Restart Go afterward.</p>
+  </main>
+  <script>
+    let controller = null;
+    const buttons = document.querySelectorAll('[data-task]');
+    const cancel = document.querySelector('#cancel');
+    const result = document.querySelector('#result');
+    for (const button of buttons) {
+      button.addEventListener('click', async () => {
+        controller = new AbortController();
+        for (const start of buttons) start.disabled = true;
+        cancel.disabled = false;
+        result.textContent = 'Task running…';
+        try {
+          const response = await fetch('/api/context/' + button.dataset.task, { signal: controller.signal });
+          result.textContent = 'Status: ' + response.status + '\n' + await response.text();
+        } catch (error) {
+          result.textContent = error.name === 'AbortError'
+            ? 'Browser canceled the request. Check the terminal for the server cancellation log.'
+            : 'Request failed: ' + error.message;
+        } finally {
+          controller = null;
+          cancel.disabled = true;
+          for (const start of buttons) start.disabled = false;
+        }
+      });
+    }
+    cancel.addEventListener('click', () => controller?.abort());
+  </script>
+</body>
+
+</html>
