@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Backend/Distributed Systems Simulation</title><link rel="stylesheet" href="/styles.css"></head>
+<body>
+<aside>
+  <a class="brand" href="/">Backend/Distributed Systems Simulation</a>
+  <nav aria-label="Concepts"><a class="selected" href="/">01 <span>Load balancing</span></a><a href="/rate-limiting.html">02 <span>Rate limiting</span></a><div class="planned">03 <span>Caching</span><small>Planned</small></div><div class="planned">04 <span>Queues & workers</span><small>Planned</small></div></nav>
+  <div class="aside-bottom">Built to understand.<br><span>One experiment at a time.</span></div>
+</aside>
+<main>
+  <h1>One entrance.<br>More than one server.</h1>
+  <p class="intro">Imagine a scenario: Concert tickets go on sale. A load balancer chooses which server handles each person's request.</p>
+  <section class="controls" aria-label="Experiment controls">
+    <div><label for="algorithm">Routing algorithm</label><select id="algorithm"><option value="round_robin">Round robin</option><option value="least_connections">Least connections</option></select></div>
+    <div><label for="interval">Time between requests (ms)</label><input id="interval" type="text" inputmode="numeric" value="100"></div>
+    <div class="actions"><button id="run" class="primary">Run experiment ↗</button><button id="step">Step</button><button id="reset">Reset</button></div>
+  </section>
+  <div id="error" role="alert"></div>
+  <section class="canvas" aria-label="Live simulation state">
+    <div class="architecture" id="architecture">
+      <svg class="request-paths" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true"><path class="wire" d="M170 300H460M540 300H650V100H760M650 300H760M650 300V500H760"/><path id="incoming" class="flow" d="M170 300H460"/><path id="outgoing" class="flow" d="M540 300H650V100H760"/></svg>
+      <div class="users-node"><div id="people" class="people"></div><label class="people-label" for="users"><input id="users" type="text" inputmode="numeric" value="100" aria-label="Number of users"> users</label><small>One request per person</small><p class="node-hint">Increase or decrease user traffic flow.</p></div>
+      <div class="balancer"><img src="/assets/load-balancer.png" alt="Gray load balancer device"><strong>Load balancer</strong><span id="rule">Take turns across healthy servers.</span></div>
+      <div class="server-group"><div id="servers" class="servers"></div><div class="server-stepper" role="group" aria-label="Number of servers"><button id="remove-server" aria-label="Remove one server">−</button><output id="server-count" aria-live="polite">3</output><button id="add-server" aria-label="Add one server">+</button></div><small>servers</small><label class="slow-toggle"><input id="slow-server" type="checkbox" role="switch"> Make one server slower</label><label class="service-setting">Service time <input id="service-time" type="text" inputmode="numeric" value="500" aria-label="Default service time"> ms</label></div>
+    </div>
+  </section>
+  <div id="comment" class="comment-bubble" role="status" hidden><p id="comment-text"></p><button id="dismiss-comment" aria-label="Dismiss explanation">×</button></div>
+  <section class="outcomes"><div><span>Routed</span><strong id="routed">0</strong></div><div><span>Completed</span><strong id="completed">0</strong></div><div><span>In flight</span><strong id="active">0</strong></div><div><span>Rejected</span><strong id="rejected">0</strong></div></section>
+  <section id="history-section" hidden><h2>Request history</h2><div class="table-wrap"><table><thead><tr><th>Time</th><th>Request</th><th>Event</th><th>Server</th></tr></thead><tbody id="history"></tbody></table></div></section>
+  <details class="notes"><summary>Learn more: controls, counters, and load balancing</summary>
+    <h3>Where do overlapping requests wait?</h3><p>In this model they do not wait in a queue. Server A can process request #1 from 0 to 500 ms and request #3 from 200 to 700 ms concurrently. Both are active between 200 and 500 ms. Go keeps their scheduled completion records in memory. A real server has finite resources, and requests may wait for CPU, a database connection, or a configured queue. A load balancer does not automatically create one queue per server.</p>
+    <h3>Why are there twice as many events?</h3><p>An event is a recorded occurrence, not a new request. Each successful request produces two events: routed and completed. 100 successful requests produce 200 events. Rejected requests produce only one event because they never reach a server.</p>
+    <h3>Users and timing</h3><p>100 users means 100 requests, one per person. I see the exact number of cartoons up to four; larger groups use four representative cartoons. ms means milliseconds: 1000 ms = 1 second. With 100 ms between arrivals, requests arrive at 0, 100, 200 ms, and so on.</p>
+    <h3>Step and simulated time</h3><p>Step advances one event: a request arrives or a server finishes it. The history table shows when each event happens in the model, not how long I have watched. Two events can share the same time. Run experiment starts automatic playback. Step stops automatic playback and advances one event; Reset clears the results.</p>
+    <h3>Server settings</h3><p>The minus and plus buttons remove or add a simulated server, between 1 and 30. All servers are healthy. Service time is how long one request takes to finish. Make one server slower gives server 1 four times the normal service time. Round robin still takes turns; least connections can send fewer new requests to the slow server because its requests remain active longer.</p>
+    <h3>Assigned, active, and done</h3><p>Assigned is every request sent to that server so far. Active is requests still being worked on. Done is finished requests. Example: assigned 10, active 3, done 7. Assigned = active + done.</p>
+    <h3>The receptionist analogy</h3><p>A receptionist sends visitors to service counters. Round robin takes turns. Least connections looks at how many visitors each counter is still serving.</p>
+    <h3>What should I notice?</h3><p id="explanation">Round robin distributes arrivals, not work duration. A slow server can accumulate more active requests even when its total assigned count is similar.</p>
+    <h3>Not a performance benchmark</h3><p>These are simulated users and server instances. Playback speed is for learning; the displayed milliseconds are modeled time, not real measured latency. No actual tickets are sold. Requests run independently with fixed service times, without a capacity limit or queue. Server health stays fixed during each experiment. The moving lines illustrate the selected route, not measured network travel time.</p>
+  </details>
+</main><script src="/app.js"></script></body></html>

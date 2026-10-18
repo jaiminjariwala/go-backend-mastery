@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rate limiting · Backend/Distributed Systems Simulation</title><link rel="stylesheet" href="/styles.css"></head>
+<body>
+<aside><a class="brand" href="/">Backend/Distributed Systems Simulation</a><nav aria-label="Concepts"><a href="/">01 <span>Load balancing</span></a><a class="selected" href="/rate-limiting.html">02 <span>Rate limiting</span></a><div class="planned">03 <span>Caching</span><small>Planned</small></div><div class="planned">04 <span>Queues & workers</span><small>Planned</small></div></nav></aside>
+<main>
+<h1>Let requests in.<br>Not all at once.</h1>
+<p class="intro">Imagine a scenario: Concert tickets go on sale. A rate limiter protects the API from too many requests by requiring one token for each request.</p>
+<section class="controls" aria-label="Experiment controls">
+ <div><label for="capacity">Bucket capacity (tokens)</label><input id="capacity" type="text" inputmode="numeric" value="5"></div>
+ <div><label for="rate">Refill (tokens per second)</label><input id="rate" type="text" inputmode="numeric" value="2"></div>
+ <div><label for="interval">Time between requests (ms)</label><input id="interval" type="text" inputmode="numeric" value="100"></div>
+ <div class="actions"><button id="run" class="primary">Run experiment ↗</button><button id="step">Step</button><button id="reset">Reset</button></div>
+</section>
+<div id="error" role="alert"></div>
+<section class="canvas" aria-label="Rate limiting simulation"><div class="architecture" id="architecture">
+ <svg class="request-paths" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true"><path id="incoming" class="flow"/><path id="outgoing" class="flow"/></svg>
+ <div class="users-node"><div id="people" class="people"></div><label class="people-label" for="users"><input id="users" type="text" inputmode="numeric" value="30" aria-label="Number of users"> users</label><small>One request per person</small><p class="node-hint">Increase or decrease user traffic flow.</p></div>
+ <div class="balancer limiter-node"><div class="token-bucket" id="bucket" aria-label="Token bucket"><div id="tokens" class="tokens"></div></div><strong>Rate limiter</strong><span>Token bucket · shared API limit</span><output id="token-count">5 / 5 tokens</output><small id="decision">Each request needs one token.</small></div>
+ <div class="rate-server"><img src="/assets/server-box.png" alt="One API server"><strong>API server</strong><small>Only allowed requests reach it</small></div>
+</div></section>
+<div id="comment" class="comment-bubble" role="status" hidden><p id="comment-text"></p><button id="dismiss-comment" aria-label="Dismiss explanation">×</button></div>
+<section class="outcomes"><div><span>Allowed</span><strong id="allowed">0</strong></div><div><span>Rejected · 429</span><strong id="rejected">0</strong></div><div><span>Requests checked</span><strong id="checked">0</strong></div></section>
+<section id="history-section" hidden><h2>Request history</h2><div class="table-wrap"><table><thead><tr><th>Time</th><th>Request</th><th>Refilled</th><th>Tokens before</th><th>Decision</th><th>Tokens after</th><th>Retry after</th></tr></thead><tbody id="history"></tbody></table></div></section>
+<details class="notes"><summary>Learn more: tokens, bursts, and rejection</summary>
+<h3>Why rate limiting?</h3><p>I protect a service from excessive traffic and put a bound on how quickly work is admitted. Load balancing chooses where a request goes; rate limiting decides whether it may enter at all. A rate limiter does not add server capacity or guarantee that allowed traffic is safe for every server.</p>
+<h3>The ticket-guard analogy</h3><p>A guard has five admission tokens. Each person uses one. Tokens regenerate at two per second, up to five. Once there is less than one token, the guard refuses entry for now. Nobody waits in a queue in this experiment.</p>
+<h3>Capacity versus refill rate</h3><p>Capacity is the maximum saved tokens and permits a short burst. Refill rate is the number added each second. With capacity 5 and refill 2/second, five requests can pass immediately if the bucket is full, followed by roughly two per second over time. This is not a strict limit of two in every one-second window.</p>
+<h3>Fractional tokens</h3><p>The bucket refills continuously in simulated time. At two tokens per second, 100 ms adds 0.2 tokens. A request still needs one whole token. The history shows refill since the previous arrival, capped by bucket capacity. Step advances to the next arrival; it also applies the refill earned during the intervening time.</p>
+<h3>What does 429 mean?</h3><p>HTTP 429 means Too Many Requests. A rejected request consumes no token and never reaches the server. Retry after is the modeled minimum wait for one token if no other request consumes it first, not a reservation or automatic retry. A real Retry-After header uses whole seconds or an HTTP date; this history displays milliseconds for teaching.</p>
+<h3>One shared bucket, not one per person</h3><p>Every person competes for the same API-wide bucket. A per-user or per-IP limit would use separate buckets keyed by identity. Multiple application instances need coordinated state, often using atomic operations in a shared store such as Redis, to enforce a shared limit correctly.</p>
+<h3>What is simulated?</h3><p>The Go API calculates token decisions. The 200 and 429 entries describe modeled responses; the simulation endpoint itself returns the complete history as JSON. No production endpoint is protected by this demo, and no real traffic or Redis is used. Every run starts with a full bucket. Playback speed and moving lines are illustrations, not network latency measurements.</p>
+</details>
+</main><script src="/rate-limit.js"></script></body></html>
