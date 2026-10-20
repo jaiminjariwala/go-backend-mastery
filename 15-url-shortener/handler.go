@@ -15,7 +15,14 @@ import (
 	"time"
 )
 
-type App struct{ db *sql.DB }
+type App struct {
+	db           *sql.DB
+	infra        infrastructure
+	cacheEnabled bool
+	limitEnabled bool
+	instance     string
+	metrics      counters
+}
 type Link struct {
 	Code string `json:"code"`
 	URL  string `json:"url"`
@@ -27,9 +34,11 @@ func (a *App) Routes() http.Handler {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		io.WriteString(w, page)
 	})
-	mux.HandleFunc("POST /api/links", a.Create)
+	mux.HandleFunc("POST /api/links", a.protect(a.Create))
 	mux.HandleFunc("GET /api/links", a.List)
-	mux.HandleFunc("GET /s/{code}", a.Redirect)
+	mux.HandleFunc("GET /s/{code}", a.protect(a.Redirect))
+	mux.HandleFunc("GET /api/inspect/{code}", a.protect(a.Inspect))
+	mux.HandleFunc("GET /api/stats", a.Stats)
 	return mux
 }
 
@@ -138,16 +147,13 @@ func (a *App) List(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) Redirect(w http.ResponseWriter, r *http.Request) {
 	code := r.PathValue("code")
-	if len(code) != 8 || strings.IndexFunc(code, func(c rune) bool {
-		return !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '-' || c == '_')
-	}) != -1 {
+	if !validCode(code) {
 		http.NotFound(w, r)
 		return
 	}
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
-	var destination string
-	err := a.db.QueryRowContext(ctx, "SELECT original_url FROM url_shortener.links WHERE code = $1", code).Scan(&destination)
+	trace, err := a.resolve(ctx, code, false)
 	if errors.Is(err, sql.ErrNoRows) {
 		http.NotFound(w, r)
 		return
@@ -156,10 +162,8 @@ func (a *App) Redirect(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "Could not look up link")
 		return
 	}
-	if !validURL(destination) {
-		fail(w, 500, "Stored URL is invalid")
-		return
-	}
+	w.Header().Set("X-Cache", trace.Cache)
+	w.Header().Set("X-Lookup-Source", trace.Source)
 	w.Header().Set("Cache-Control", "no-store")
-	http.Redirect(w, r, destination, http.StatusFound)
+	http.Redirect(w, r, trace.URL, http.StatusFound)
 }
