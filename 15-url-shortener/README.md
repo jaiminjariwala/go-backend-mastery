@@ -1,5 +1,23 @@
 # URL shortener: my working architecture
 
+## Current UI: real cache lookups
+
+I ran this locally with Go, PostgreSQL on Neon, and Redis in Docker Desktop. These screenshots show actual requests, not simulated results. The counters include earlier experiments in the same Go process.
+
+### First lookup: PostgreSQL fills the cache
+
+Redis has no cached mapping, so Go reads PostgreSQL and saves the destination in Redis with a 60-second TTL.
+
+![Cache miss with PostgreSQL lookup and successful Redis cache fill](screenshots/cache-miss.jpg)
+
+### Repeat lookup: Redis answers
+
+The next request for the same code hits Redis without another destination lookup in PostgreSQL. The displayed timings are individual observations, not a load-test benchmark or a guaranteed speedup.
+
+![Redis cache hit without a database read](screenshots/cache-hit.jpg)
+
+For current setup, implementation details, and experiments, I use the [backend lab guide](BACKEND_LAB.md). The architecture notes below document my initial database-only version and the reasoning that led to this upgrade.
+
 I am building one small Go project to connect backend concepts to a real feature. My experiments and gradual concept learning remain in 14-backend-labs; this project lives separately in 15-url-shortener. I focus on request flow, data, file responsibilities, and design tradeoffs rather than memorizing every library call.
 
 ## What I built first
@@ -152,7 +170,7 @@ I first measure a real problem: request latency, query count, database load, err
 
 My existing primary-key index already supports code lookup. Before adding services, I can examine query plans, pool wait time, and workload measurements. The latest-links query is bounded to 50 returned rows, but may still sort many stored rows; an index on its ordering columns becomes useful when measured growth warrants it.
 
-The following are future options, NOT installed or implemented:
+At the database-only stage, the following were future options. Redis caching and shared rate limiting are now implemented; the load balancer and queue remain future options:
 
 ```text
  O
@@ -336,3 +354,6 @@ go test -race ./15-url-shortener
 ```
 
 Tests simulate SQL replies; they do not prove Neon connectivity, schema correctness, or real persistence. My manual setup/redirect/restart checks provide that evidence. The app lists recent URLs without authentication, has no expiration/edit/delete or analytics, and allows redirects to user-provided HTTP(S) destinations. I do not expose it publicly before adding authentication/authorization where appropriate, anti-abuse controls, destination policy, privacy handling, and deployment safeguards. Syntax validation is not malware detection. I use non-sensitive test URLs.
+## Redis cache and rate-limiting upgrade
+
+I have added a real Redis cache-aside path, an atomic shared fixed-window rate limiter, and a live diagnostic UI with Trace lookup and Baseline lookup actions. My [backend lab guide](BACKEND_LAB.md) explains setup, request flows, file responsibilities, baseline load tests, multiple instances, and controlled failure experiments. I verified a live PostgreSQL cache miss and Redis cache hit locally. Controlled load tests, multi-instance checks, and failure experiments are still pending; I am not claiming benchmark numbers.
