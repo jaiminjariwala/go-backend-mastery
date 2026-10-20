@@ -90,18 +90,159 @@
     .scroll {
       overflow: auto
     }
+
+    body {
+      background: #fff
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 36px auto
+    }
+
+    h1 {
+      font-size: 48px;
+      letter-spacing: -1.5px;
+      margin-bottom: 14px
+    }
+
+    .dashboard {
+      margin-top: 36px;
+      border-top: 1px solid #eee;
+      padding-top: 24px
+    }
+
+    .tiles {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin: 20px 0
+    }
+
+    .tile {
+      padding: 18px;
+      border: 1px solid #e8e8e8;
+      border-radius: 14px
+    }
+
+    .tile strong {
+      display: block;
+      font-size: 26px;
+      margin-top: 8px
+    }
+
+    .tile small {
+      font-size: 12px
+    }
+
+    .secondary {
+      background: white;
+      color: #2962cd;
+      padding: 8px 10px;
+      font-size: 12px;
+      white-space: nowrap
+    }
+
+    .path {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 20px 0
+    }
+
+    .node {
+      padding: 14px 20px;
+      border: 1px solid #e4e7ec;
+      border-radius: 12px;
+      font-size: 14px
+    }
+
+    .node.selected {
+      border-color: #2962cd;
+      background: #f0f5ff
+    }
+
+    .arrow {
+      color: #2962cd
+    }
+
+    .tracebox {
+      border: 1px solid #e8e8e8;
+      border-radius: 24px;
+      padding: 24px;
+      margin-top: 16px
+    }
+
+    .tracebox p {
+      margin: 8px 0
+    }
+
+    .tracebox[hidden] {
+      display: none
+    }
+
+    .statusline {
+      font-size: 13px
+    }
+
+    details {
+      margin-top: 24px;
+      border-top: 1px solid #eee;
+      padding-top: 20px
+    }
+
+    summary {
+      cursor: pointer
+    }
+
+    button:hover {
+      filter: brightness(.96)
+    }
+
+    @media(max-width:650px) {
+      .tiles {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      h1 {
+        font-size: 36px
+      }
+    }
   </style>
 </head>
 
 <body>
   <main>
-    <small>Go backend mastery / Project 15</small>
     <h1>Make a long link short.</h1>
     <p>I save a URL, receive a short code, and use it to redirect a browser. PostgreSQL keeps the mapping after a server
       restart.</p>
     <form id="form"><input id="url" type="url" aria-label="Original URL" placeholder="https://example.com/a/long/path"
         required maxlength="2048"><button id="save">Shorten URL</button></form>
     <p id="status" role="status"></p>
+    <section class="dashboard">
+      <h2>See what the backend actually does.</h2>
+      <p>Trace a saved link twice. The first lookup can read PostgreSQL and fill Redis; the next can come from Redis
+        without a database read. Baseline lookup deliberately skips the cache.</p>
+      <p id="infra-status" class="statusline" role="status">Checking backend configuration…</p>
+      <div class="tiles">
+        <div class="tile"><small>Cache hits</small><strong id="hits">0</strong></div>
+        <div class="tile"><small>Cache misses</small><strong id="misses">0</strong></div>
+        <div class="tile"><small>Lookup database reads</small><strong id="reads">0</strong></div>
+        <div class="tile"><small>Rate-limit rejections</small><strong id="limited">0</strong></div>
+      </div>
+      <div class="path">
+        <div class="node">Browser</div><span class="arrow">→</span>
+        <div class="node">Go API + rate limiter</div><span class="arrow">→</span>
+        <div class="node" id="redis-node">Redis cache</div><span class="arrow">→ on miss</span>
+        <div class="node" id="db-node">PostgreSQL</div>
+      </div>
+      <div class="tracebox" id="trace" hidden aria-live="polite"><strong id="trace-title"></strong>
+        <p id="trace-detail"></p>
+        <p id="trace-time"></p><small>Actual lookup, not a simulated result. Trace returns JSON instead of redirecting
+          your browser. One lookup timing is not a benchmark.</small>
+      </div>
+    </section>
     <h2>My latest 50 links</h2>
     <div class="scroll">
       <table>
@@ -109,6 +250,7 @@
           <tr>
             <th>Short link</th>
             <th>Original URL</th>
+            <th>Inspect request</th>
           </tr>
         </thead>
         <tbody id="links"></tbody>
@@ -116,11 +258,25 @@
     </div>
     <h2>Last creation response</h2>
     <pre id="response">No link created yet.</pre>
-    <p>Local learning app. Links are not private. No sign-in or abuse prevention yet; do not deploy publicly or store
+    <details>
+      <summary>What do these results mean?</summary>
+      <p>Cache hit: Redis supplied the destination. Cache miss: Redis had no mapping, so Go asked PostgreSQL and tried
+        to save the result for 60 seconds. Cache error: Redis failed, so Go tried PostgreSQL. Baseline: the cache was
+        intentionally skipped. A 429 means the client used its rate allowance; Retry-After tells it when to try again. A
+        503 can mean the shared rate limiter is unavailable.</p>
+      <p>Counters are per Go process since startup, and include redirects plus trace lookups. The database-read counter
+        counts destination SELECT attempts, not listing or creating links. Redis cache and limit state are shared across
+        instances using the same Redis database. UI tracing shares the redirect limit for your client. These diagnostics
+        are for local learning, not a public dashboard.</p>
+    </details>
+    <p>Local learning app. Links are not private. Basic rate limiting is not complete abuse prevention. No sign-in; do
+      not deploy publicly or store
       sensitive URLs.</p>
   </main>
   <script>
     const status = document.querySelector('#status');
+    async function stats() { const response = await fetch('/api/stats'); const s = await response.json(); if (!response.ok) throw Error('Could not read diagnostics'); document.querySelector('#infra-status').textContent = 'Instance ' + s.instance + ' · Redis ' + (s.redis_configured ? 'configured (trace to test availability)' : 'not configured') + ' · cache ' + (s.cache_enabled ? 'enabled, 60-second TTL' : 'disabled') + ' · rate limit ' + (s.rate_limit_enabled ? '20 requests / 10 seconds per client' : 'disabled'); for (const [id, key] of [['hits', 'cache_hits'], ['misses', 'cache_misses'], ['reads', 'lookup_db_reads'], ['limited', 'rate_rejected']]) document.getElementById(id).textContent = s[key]; }
+    async function inspect(code, baseline, button) { button.disabled = true; const box = document.querySelector('#trace'); box.hidden = false; try { const response = await fetch('/api/inspect/' + encodeURIComponent(code) + (baseline ? '?baseline=1' : '')); const t = await response.json(); document.querySelector('#trace-title').textContent = 'HTTP ' + response.status + ' · ' + (response.headers.get('X-RateLimit-Decision') || 'unknown') + ' rate-limit decision'; document.querySelector('#trace-detail').textContent = response.ok ? (t.cache + ' · source: ' + t.source + ' · database read: ' + t.database_read + ' · cache saved: ' + t.cache_saved) : (t.error || 'Lookup failed') + (response.headers.get('Retry-After') ? ' · retry after ' + response.headers.get('Retry-After') + ' seconds' : ''); document.querySelector('#trace-time').textContent = response.ok ? t.elapsed_ms + ' ms · instance ' + t.instance + ' · ' + t.url : ''; document.querySelector('#redis-node').classList.toggle('selected', response.ok && t.source === 'redis'); document.querySelector('#db-node').classList.toggle('selected', response.ok && t.database_read); await stats(); } catch (e) { document.querySelector('#trace-title').textContent = 'Request failed'; document.querySelector('#trace-detail').textContent = e.message; } finally { button.disabled = false; } }
     async function list() {
       const response = await fetch('/api/links');
       const links = await response.json();
@@ -136,7 +292,8 @@
         shortCell.append(short);
         const original = document.createElement('td');
         original.textContent = link.url;
-        row.append(shortCell, original); document.querySelector('#links').append(row);
+        const actions = document.createElement('td'); for (const [label, baseline] of [['Trace lookup', false], ['Baseline lookup', true]]) { const button = document.createElement('button'); button.className = 'secondary'; button.textContent = label; button.addEventListener('click', () => inspect(link.code, baseline, button)); actions.append(button, document.createTextNode(' ')); }
+        row.append(shortCell, original, actions); document.querySelector('#links').append(row);
       }
       status.textContent = links.length + ' recent links loaded.';
     }
@@ -153,6 +310,7 @@
       finally { button.disabled = false; }
     });
     list().catch(error => status.textContent = error.message);
+    stats().catch(error => document.querySelector('#infra-status').textContent = error.message);
   </script>
 </body>
 
