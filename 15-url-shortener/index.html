@@ -215,7 +215,7 @@
 <body>
   <main>
     <h1>Make a long link short.</h1>
-    <p>I save a URL, receive a short code, and use it to redirect a browser. PostgreSQL keeps the mapping after a server
+    <p>Save a URL, receive a short code, and use it to redirect a browser. PostgreSQL keeps the mapping after a server
       restart.</p>
     <form id="form"><input id="url" type="url" aria-label="Original URL" placeholder="https://example.com/a/long/path"
         required maxlength="2048"><button id="save">Shorten URL</button></form>
@@ -264,14 +264,7 @@
         to save the result for 60 seconds. Cache error: Redis failed, so Go tried PostgreSQL. Baseline: the cache was
         intentionally skipped. A 429 means the client used its rate allowance; Retry-After tells it when to try again. A
         503 can mean the shared rate limiter is unavailable.</p>
-      <p>Counters are per Go process since startup, and include redirects plus trace lookups. The database-read counter
-        counts destination SELECT attempts, not listing or creating links. Redis cache and limit state are shared across
-        instances using the same Redis database. UI tracing shares the redirect limit for your client. These diagnostics
-        are for local learning, not a public dashboard.</p>
     </details>
-    <p>Local learning app. Links are not private. Basic rate limiting is not complete abuse prevention. No sign-in; do
-      not deploy publicly or store
-      sensitive URLs.</p>
   </main>
   <script>
     const status = document.querySelector('#status');
