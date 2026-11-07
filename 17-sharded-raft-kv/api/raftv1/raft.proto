@@ -1,0 +1,83 @@
+syntax = "proto3";
+package raft.v1;
+option go_package = "github.com/jaiminjariwala/go-backend-mastery/17-sharded-raft-kv/api/raftv1;raftv1";
+
+// Data-plane RPCs share the HTTP administration listener on loopback.
+// Deliver acknowledges transport acceptance, not client write commitment.
+service Replica {
+  rpc Deliver(PeerMessage) returns (DeliveryReceipt);
+  rpc Execute(ClientCommand) returns (ClientReceipt);
+}
+
+enum MessageKind {
+  MESSAGE_KIND_UNSPECIFIED = 0;
+  VOTE = 1;
+  BALLOT = 2;
+  APPEND = 3;
+  SNAPSHOT = 4;
+  ACK = 5;
+}
+enum Operation {
+  OPERATION_UNSPECIFIED = 0;
+  WRITE = 1;
+  READ = 2;
+  DELETE = 3;
+}
+message LogEntry {
+  int64 term = 1;
+  string key = 2;
+  string value = 3;
+  string request_id = 4;
+  string read_key = 5;
+  bool delete = 6;
+}
+message AppliedRequest {
+  string key = 1;
+  string value = 2;
+  int64 index = 3;
+  int64 term = 4;
+  bool delete = 5;
+}
+message Checkpoint {
+  int64 index = 1;
+  int64 term = 2;
+  map<string, string> values = 3;
+  map<string, AppliedRequest> requests = 4;
+}
+message PeerMessage {
+  int32 shard_id = 1;
+  int64 id = 2;
+  int32 from = 3;
+  int32 to = 4;
+  int64 term = 5;
+  int64 sent = 6;
+  int64 due = 7;
+  MessageKind kind = 8;
+  repeated LogEntry log = 9;
+  int64 commit = 10;
+  bool ok = 11;
+  bool quiet = 12;
+  int64 index = 13;
+  Checkpoint snapshot = 14;
+}
+message DeliveryReceipt {}
+message ClientCommand {
+  int32 shard_id = 1;
+  Operation operation = 2;
+  string request_id = 3;
+  string key = 4;
+  string value = 5;
+}
+message ClientReceipt {
+  int32 shard_id = 1;
+  int32 server_id = 2;
+  Operation operation = 3;
+  string request_id = 4;
+  string key = 5;
+  string value = 6;
+  int64 index = 7;
+  int64 term = 8;
+  bool committed = 9;
+  bool replayed = 10;
+  bool found = 11;
+}
