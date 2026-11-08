@@ -1,0 +1,139 @@
+# DNS is published before readiness, allowing peers to bootstrap together.
+apiVersion: v1
+kind: Service
+metadata:
+  name: shard-2
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    app: raft-lab
+    component: replica
+    shard: "2"
+  ports:
+    - name: peer
+      port: 8091
+      targetPort: peer
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: shard-2
+spec:
+  serviceName: shard-2
+  replicas: 3
+  # Do not wait for one voter to become ready before creating the others.
+  podManagementPolicy: Parallel
+  # Update deliberately, one Pod at a time, verifying recovery between updates.
+  updateStrategy:
+    type: OnDelete
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  selector:
+    matchLabels:
+      app: raft-lab
+      component: replica
+      shard: "2"
+  template:
+    metadata:
+      labels:
+        app: raft-lab
+        component: replica
+        shard: "2"
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 15
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+      containers:
+        - name: replica
+          image: raft-kv:lab
+          imagePullPolicy: IfNotPresent
+          args:
+            - -mode=node
+            - -id=-1
+            - -shard-id=1
+            - -shard-count=2
+            - -peer-config=/etc/raft/peers.json
+            - -node-listen=0.0.0.0:8091
+            - -data-dir=/data
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_UID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid
+            - name: POD_VOLUME_CLAIM
+              value: data-$(POD_NAME)
+          ports:
+            - name: peer
+              containerPort: 8091
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              cpu: "1"
+              memory: 256Mi
+          startupProbe:
+            httpGet:
+              path: /readyz
+              port: peer
+            periodSeconds: 2
+            failureThreshold: 30
+          # Neither probe requires leadership or quorum. Quorum loss must not
+          # create a restart loop that prevents the group from recovering.
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: peer
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: peer
+            periodSeconds: 3
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: peers
+              mountPath: /etc/raft
+              readOnly: true
+      volumes:
+        - name: peers
+          configMap:
+            name: raft-peers
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 1Gi
+---
+# This protects voluntary eviction, not simultaneous crashes or manual deletion.
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: shard-2
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: raft-lab
+      component: replica
+      shard: "2"

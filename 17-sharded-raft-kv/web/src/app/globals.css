@@ -111,3 +111,17 @@ select {
   background: #eceef3;
   color: #5e6066;
 }
+
+/* Live tables keep the reference illustration's inset frame, at a compact width. */
+.live-replica-table {
+  padding: 0 12px 12px;
+  border-radius: 20px;
+}
+.live-replica-table .reference-table-title {
+  padding: 10px 0 4px;
+  font-size: 13px;
+}
+.live-replica-table .reference-table-grid {
+  border-radius: 12px;
+}
+.live-replica-table th:first-child { width: 44%; }
