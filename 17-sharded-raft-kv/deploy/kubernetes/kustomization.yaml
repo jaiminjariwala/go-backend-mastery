@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: raft-lab
+resources:
+  - namespace.yaml
+  - peers.yaml
+  - shard-1.yaml
+  - shard-2.yaml
+  - gateway.yaml
+  - network.yaml

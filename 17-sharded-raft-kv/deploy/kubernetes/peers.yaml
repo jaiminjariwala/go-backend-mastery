@@ -1,0 +1,9 @@
+# Fixed membership: array position is the voter ID. Do not reorder or scale.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: raft-peers
+immutable: true
+data:
+  peers.json: |
+    {"Groups":[["shard-1-0.shard-1:8091","shard-1-1.shard-1:8091","shard-1-2.shard-1:8091"],["shard-2-0.shard-2:8091","shard-2-1.shard-2:8091","shard-2-2.shard-2:8091"]]}
