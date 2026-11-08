@@ -1,0 +1,51 @@
+{
+  "RunID": "92439ae0-25dc-4d97-a0f2-576237917193",
+  "Checks": [
+    {
+      "Pod": "shard-2-1",
+      "OldUID": "84e5a5ed-4921-4a3c-8c1b-b805fdda259d",
+      "NewUID": "517d38c0-9b80-4049-8d25-a7624c6b200b",
+      "PVC": "data-shard-2-1",
+      "Volume": "pvc-a84b8d90-25e5-47ed-89be-b11918d821a1",
+      "ReadVerified": true,
+      "RetryReceiptRetained": true
+    },
+    {
+      "Pod": "shard-1-2",
+      "OldUID": "4d7bd21e-9255-4ff4-96e9-5a5f12e50a49",
+      "NewUID": "605ae1a9-096a-4ca3-92e8-c66127128901",
+      "PVC": "data-shard-1-2",
+      "Volume": "pvc-9d1d4ccc-ba76-4a5b-a903-55e54d4138b4",
+      "ReadVerified": true,
+      "RetryReceiptRetained": true
+    }
+  ],
+  "Receipts": [
+    {
+      "ShardID": 1,
+      "ServerID": 1,
+      "Operation": "write",
+      "RequestID": "92439ae0-25dc-4d97-a0f2-576237917193-a",
+      "Key": "kubernetes-check:a",
+      "Value": "retained-92439ae0-25dc-4d97-a0f2-576237917193",
+      "Index": 2,
+      "Term": 4,
+      "Committed": true,
+      "Replayed": false,
+      "Found": true
+    },
+    {
+      "ShardID": 0,
+      "ServerID": 2,
+      "Operation": "write",
+      "RequestID": "92439ae0-25dc-4d97-a0f2-576237917193-b",
+      "Key": "kubernetes-check:b",
+      "Value": "retained-92439ae0-25dc-4d97-a0f2-576237917193",
+      "Index": 3,
+      "Term": 6,
+      "Committed": true,
+      "Replayed": false,
+      "Found": true
+    }
+  ]
+}

@@ -320,7 +320,7 @@ export function VisualConcepts({ onOpenLab }: { onOpenLab?: () => void }) {
         <div className="grid items-center gap-8 md:grid-cols-[1fr_auto_1fr]">
           <Panel title="What the client sees">
             <img
-              src="/client.png"
+              src="/client-computer.png"
               alt="Client"
               className="mx-auto h-36 object-contain"
             />
@@ -367,7 +367,7 @@ export function VisualConcepts({ onOpenLab }: { onOpenLab?: () => void }) {
         <div className="grid items-center gap-5 lg:grid-cols-[1fr_auto_1fr_auto_1fr]">
           <Panel title="Browser">
             <img
-              src="/client.png"
+              src="/client-computer.png"
               alt="Client browser"
               className="mx-auto h-40 object-contain"
             />

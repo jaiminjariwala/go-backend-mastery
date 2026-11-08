@@ -23,8 +23,6 @@ export function ReplicaRows({
   onEdit,
   label,
   applied = true,
-  shardNumber,
-  playbackLabel,
 }: Props) {
   const reduce = useReducedMotion();
   const previous = useRef(values);
@@ -57,12 +55,6 @@ export function ReplicaRows({
   }, []);
   return (
     <div className="reference-table live-replica-table min-w-0 text-left" aria-label={label}>
-      <h3 className="reference-table-title py-2 text-center text-xs font-medium text-gray-600">
-        USERS TABLE
-      </h3>
-      <p className="pb-2 text-center text-ui-11 text-gray-400">
-        {playbackLabel || (shardNumber ? `Shard ${shardNumber} · stored rows` : "Stored rows")}
-      </p>
       <p className="sr-only">
         {online
           ? `${all.length} ${applied ? "applied " : ""}row${all.length === 1 ? "" : "s"}`

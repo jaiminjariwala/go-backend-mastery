@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { KubernetesRecovery } from "./kubernetes-recovery";
-import { LiveShardMap } from "./live-shard-map";
 import { VisualConcepts } from "./visual-concepts";
 import { NetworkCanvas } from "./network-canvas";
 import { useOperationPlayback } from "@/lib/use-operation-playback";
@@ -12,27 +11,6 @@ const secondary =
   "rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-40";
 const primary =
   "rounded-lg border border-brand bg-brand px-4 py-2.5 text-sm text-white transition-colors hover:bg-brand-hover disabled:opacity-40";
-function explain(text: string) {
-  return text
-    .replaceAll("Node ", "Server ")
-    .replace(
-      "Three nodes started. Waiting for an election timeout.",
-      "No leader yet. Run the experiment: when a server’s waiting timer expires, it asks the others for votes.",
-    )
-    .replace(
-      /starts election for term (\d+)\./,
-      "starts election round $1 and asks for votes.",
-    )
-    .replace(
-      /commits through entry (\d+) with a majority\./,
-      "commits through entry $1 after enough replication replies arrive.",
-    )
-    .replace(
-      "In-memory log retained for this simulated restart.",
-      "Its simulated memory is retained. Messages sent to it will be dropped.",
-    );
-}
-
 export function RaftConsole() {
   const [key, setKey] = useState("101"),
     [value, setValue] = useState("Maya");
@@ -46,12 +24,10 @@ export function RaftConsole() {
     setRunning,
     request,
     operate,
-    receipt,
     pending,
     clientBusy,
     exchange,
     selectedShard,
-    selectShard,
     recover,
   } = useCluster(key);
   const { playback, replay, skip } = useOperationPlayback(cluster, exchange);
@@ -88,7 +64,6 @@ export function RaftConsole() {
     setTarget("auto");
   }, [selectedShard]);
   const sharded = (cluster?.ShardCount || 1) > 1;
-  const route = cluster?.Route?.Key === key ? cluster.Route : null;
   const targetID = target === "auto" ? undefined : Number(target);
   const leaders = (cluster?.Nodes || [])
     .filter((n) => n.Up && n.Role === "leader")
@@ -103,12 +78,7 @@ export function RaftConsole() {
   const connectedCount = (cluster?.Nodes || []).filter(
     (n) => n.Up && !cluster?.Isolated?.[n.ID],
   ).length;
-  const progress = cluster?.Progress;
-  const drop = (cluster?.Deliveries || [])
-    .filter((d) => d.Status === "dropped" && cluster!.Tick - d.At <= 3)
-    .at(-1);
   const node = selected !== null ? cluster?.Nodes[selected] : null;
-  const latest = cluster?.Events.at(-1);
 
   return (
     <main className="mx-auto max-w-270 px-5 pb-10 pt-6 font-sans sm:px-8 sm:pt-8">
@@ -143,18 +113,6 @@ export function RaftConsole() {
       )}
       {view === "live" && (
         <>
-          {sharded && (
-            <LiveShardMap
-              shards={cluster?.Shards || []}
-              selected={selectedShard}
-              onSelect={selectShard}
-            />
-          )}
-
-          <h2 className="mt-5 text-base font-semibold">Client request</h2>
-          <p className="mt-1 text-xs text-gray-500">
-            Save changes one key. Tables show all rows already stored in the selected shard.
-          </p>
           <div className="sticky top-0 z-30 mt-2 flex flex-wrap items-end justify-between gap-x-6 gap-y-2 border-b border-gray-100 bg-white/95 py-3 backdrop-blur-sm">
             <form
               id="row-editor"
@@ -264,31 +222,6 @@ export function RaftConsole() {
               )}
             </div>
           </div>
-          {sharded && (
-            <div className="mt-3 flex flex-wrap items-center gap-3 text-ui-13 text-gray-500">
-              <span>
-                {route ? (
-                  <>
-                    <code className="whitespace-nowrap">
-                      {key || "(empty key)"}
-                    </code>{" "}
-                    → Shard {route.ShardID + 1} · stable key hash modulo 2
-                  </>
-                ) : (
-                  "Finding the key’s shard…"
-                )}
-              </span>
-              {route && route.ShardID !== selectedShard && (
-                <button
-                  type="button"
-                  className="text-brand underline underline-offset-4"
-                  onClick={() => selectShard(route.ShardID)}
-                >
-                  View owning shard
-                </button>
-              )}
-            </div>
-          )}
           {error && (
             <div
               role="alert"
@@ -340,44 +273,6 @@ export function RaftConsole() {
               </span>
             </div>
           )}
-          {cluster?.Live && receipt && (
-            <div
-              role="status"
-              className="mt-3 rounded-lg border border-gray-200 px-4 py-2 text-sm"
-            >
-              <p className="font-medium text-brand">
-                {receipt.Operation === "delete"
-                  ? "Row removed · client received a committed response"
-                  : receipt.Operation === "write"
-                    ? "Saved · client received a committed response"
-                    : receipt.Found
-                      ? "Read completed after a committed barrier"
-                      : "Read completed · key not found"}
-              </p>
-              <p className="mt-1 overflow-x-auto whitespace-nowrap font-mono text-gray-700">
-                {receipt.Key}{" "}
-                {receipt.Found ? `= ${receipt.Value}` : "is absent"}
-              </p>
-              <details className="mt-1 text-xs text-gray-500">
-                <summary className="cursor-pointer">Request details</summary>
-              <p className="mt-1 text-xs text-gray-500">
-                {sharded && receipt.ShardID !== undefined
-                  ? `Shard ${receipt.ShardID + 1} · `
-                  : ""}
-                Entry {receipt.Index} · term {receipt.Term}
-                {receipt.Replayed
-                  ? " · same request ID, original result returned"
-                  : ""}
-              </p>
-              {receipt.RequestID && (
-                <p className="mt-1 overflow-x-auto whitespace-nowrap font-mono text-ui-11 text-gray-400">
-                  Request ID {receipt.RequestID}
-                </p>
-              )}
-              </details>
-            </div>
-          )}
-
           <section className="mt-4" aria-label="Server cluster">
             {cluster?.Live && (!leader || connectedCount < 2) && (
               <div
@@ -451,12 +346,7 @@ export function RaftConsole() {
                   : leader
                     ? `Server ${leader.ID + 1} is the leader`
                     : "Waiting for a leader"}
-                <span className="mx-2 text-gray-300">·</span>
-                <span className="tabular-nums">
-                  {cluster?.Live
-                    ? "Live · refreshes automatically"
-                    : `Tick ${cluster?.Tick || 0}`}
-                </span>
+                {!cluster?.Live && <><span className="mx-2 text-gray-300">·</span><span className="tabular-nums">Tick {cluster?.Tick || 0}</span></>}
               </p>
               {!cluster?.Live && (
                 <div className="flex items-center gap-4">
@@ -529,45 +419,6 @@ export function RaftConsole() {
                 <span>
                   <span className="mr-1.5 inline-block h-0.5 w-3 align-middle bg-dropped" />
                   Dropped
-                </span>
-              </div>
-            )}
-            <div
-              className="mt-5 rounded-xl border border-gray-200 px-5 py-4 text-sm leading-relaxed sm:text-ui-15"
-              aria-live="polite"
-            >
-              <p className="text-gray-700">
-                {latest ? explain(latest.Text) : "Connecting to the cluster."}
-              </p>
-              {drop && (
-                <p className="mt-1.5 text-ui-13 text-warning-muted">
-                  Server {drop.Message.From + 1} → Server {drop.Message.To + 1}:
-                  destination offline. Message dropped.
-                </p>
-              )}
-            </div>
-            {progress && (
-              <div
-                className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1 text-ui-13 text-gray-500"
-                role="status"
-              >
-                <span className="max-w-full overflow-x-auto whitespace-nowrap font-mono text-gray-800">
-                  {progress.Delete
-                    ? `Remove ${progress.Key}`
-                    : `${progress.Key} = ${progress.Value}`}
-                </span>
-                <span className={progress.Committed ? "text-brand" : ""}>
-                  {progress.Phase === "superseded"
-                    ? "Replaced before commitment"
-                    : progress.Committed
-                      ? "Committed"
-                      : "Pending ,  waiting for a majority"}
-                </span>
-                <span>
-                  {progress.Confirmed.length}/3 recorded copies
-                  {progress.Committed
-                    ? ` · observed applied on ${progress.Applied.length}/3`
-                    : ""}
                 </span>
               </div>
             )}
@@ -783,38 +634,12 @@ export function RaftConsole() {
             </section>
           </details>
 
-          <details className="mt-7 border-t border-gray-100 pt-5">
-            <summary className="w-fit text-sm text-gray-500">
-              Activity history
-            </summary>
-            <ol className="mt-3 max-h-64 space-y-3 overflow-auto text-ui-13 leading-relaxed text-gray-500">
-              {cluster?.Events.slice()
-                .reverse()
-                .map((e, i) => (
-                  <li className="flex gap-4" key={`${e.At}-${i}-${e.Text}`}>
-                    <time className="w-8 shrink-0 tabular-nums text-gray-400">
-                      {e.At}
-                    </time>
-                    <span>{explain(e.Text)}</span>
-                  </li>
-                ))}
-            </ol>
-          </details>
           {cluster?.Deployment === "kubernetes" && (
             <p className="mt-5 text-sm text-gray-600">
               Kubernetes deployment: six Pods across two fixed Raft groups.
               Kubernetes replaces Pods and reattaches their persistent volumes.
               Use kubectl for Pod replacement; changing the StatefulSet replica
               count does not change the voting group.
-            </p>
-          )}
-          {cluster?.Transport === "grpc" && (
-            <p className="mt-5 text-xs text-gray-500">
-              This group’s received gRPC traffic since each process started:{" "}
-              {(cluster.PeerRPCs || []).reduce((sum, n) => sum + n, 0)} peer
-              calls ·{" "}
-              {(cluster.ClientRPCs || []).reduce((sum, n) => sum + n, 0)} client
-              commands. A received RPC does not itself prove commitment.
             </p>
           )}
           <footer className="mt-6 text-xs leading-relaxed text-gray-400">
