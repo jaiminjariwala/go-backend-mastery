@@ -112,14 +112,13 @@ select {
   color: #5e6066;
 }
 
-/* Live tables keep the reference illustration's inset frame, at a compact width. */
+/* Live rows use one frame around the grid; examples retain their outer card. */
 .live-replica-table {
-  padding: 0 12px 12px;
-  border-radius: 20px;
-}
-.live-replica-table .reference-table-title {
-  padding: 10px 0 4px;
-  font-size: 13px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 .live-replica-table .reference-table-grid {
   border-radius: 12px;

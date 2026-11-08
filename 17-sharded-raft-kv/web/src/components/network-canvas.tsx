@@ -111,12 +111,11 @@ export function NetworkCanvas({
   return (
     <div className="mt-3">
       {playback && playback.shardID === (cluster?.ShardID || 0) && (
-        <div data-playback-run={playback.run} data-playback-phase={replayHere ? (playback.elapsed < playback.applyAt ? "before-apply" : "applied") : "live"} className="mb-2 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-blue-50/60 px-3 py-2 text-xs text-gray-600" role="status">
-          <span>{replayHere
-            ? `Recorded operation replay · ${playback.elapsed < REQUEST_TRAVEL_SECONDS ? "Client request" : playback.elapsed < REQUEST_TRAVEL_SECONDS + 2.4 ? "Copying log instructions" : playback.elapsed < playback.applyAt ? "Followers acknowledge stored instructions" : "Showing observed applied rows"}`
-            : "Live rows · recorded replay finished"}
-            <span className="ml-2 text-gray-400">{replayHere ? "Slowed playback with before/after samples. The database runs at real speed." : "Switching shards does not replay the last operation."}</span>
-          </span>
+        <div data-playback-run={playback.run} data-playback-phase={replayHere ? (playback.elapsed < playback.applyAt ? "before-apply" : "applied") : "live"} className={`mb-2 flex flex-wrap items-center gap-2 text-xs text-gray-600 ${replayHere ? "justify-between rounded-lg bg-blue-50/60 px-3 py-2" : "justify-end"}`} role="status">
+          {replayHere && <span>
+            {`Recorded operation replay · ${playback.elapsed < REQUEST_TRAVEL_SECONDS ? "Client request" : playback.elapsed < REQUEST_TRAVEL_SECONDS + 2.4 ? "Copying log instructions" : playback.elapsed < playback.applyAt ? "Followers acknowledge stored instructions" : "Showing observed applied rows"}`}
+            <span className="ml-2 text-gray-400">Slowed playback with before/after samples. The database runs at real speed.</span>
+          </span>}
           <button className="shrink-0 text-brand underline underline-offset-2" onClick={replayHere ? onSkipPlayback : onReplay}>
             {replayHere ? "Show live rows" : "Replay last operation"}
           </button>
@@ -282,7 +281,7 @@ export function NetworkCanvas({
 
           </div>
           <div className="absolute top-1/2 w-52 -translate-x-1/2 -translate-y-1/2 text-center" style={{ left: controllerCenterX ?? "calc(50% - 179px)" }}>
-            <div ref={controller} className="rounded-2xl border border-[#c7c9d3] bg-white px-3 py-4 shadow-sm">
+            <div ref={controller} className="rounded-2xl border border-[#c7c9d3] bg-white px-3 py-3 shadow-sm">
               <h3 className="text-sm font-semibold">Go controller</h3>
               <div className="mt-3 space-y-2 text-left text-xs leading-5 text-gray-600">
                 <p>Receives your HTTP request.</p>
@@ -290,9 +289,9 @@ export function NetworkCanvas({
                 <p>Finds that shard’s leader and sends your request by <strong className="font-medium text-gray-800">gRPC</strong>.</p>
                 <p>Returns the response to your browser.</p>
               </div>
-              {exchange && sameShard && <div className="mt-4 border-t border-gray-200 pt-3 text-xs leading-5" aria-live="polite">
+              {exchange && sameShard && <div className="mt-2 border-t border-gray-200 pt-1 text-xs leading-4" aria-live="polite">
                 <p className="truncate font-mono text-gray-700" title={exchange.Key}>{exchange.Key}</p>
-                <p className="mt-1 text-brand">Shard {(cluster?.ShardID || 0) + 1}{target !== undefined ? ` · Server ${target + 1}` : " · finding leader"}</p>
+                <p className="mt-0.5 text-brand">Shard {(cluster?.ShardID || 0) + 1}{target !== undefined ? ` · Server ${target + 1}` : " · finding leader"}</p>
               </div>}
             </div>
           </div>
