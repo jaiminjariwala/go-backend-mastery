@@ -100,14 +100,14 @@ export interface WriteProgress {
   Committed: boolean;
 }
 export interface ReplicaRuntime {
- PodName: string;
- PodUID: string;
- VolumeClaim: string;
- Boot: string;
- PID: number;
+  PodName: string;
+  PodUID: string;
+  VolumeClaim: string;
+  Boot: string;
+  PID: number;
 }
 export interface Cluster {
- ReplicaRuntime?: ReplicaRuntime[];
+  ReplicaRuntime?: ReplicaRuntime[];
   PeerObservations?: PeerObservation[];
   Transport?: string;
   Deployment?: "local" | "kubernetes";

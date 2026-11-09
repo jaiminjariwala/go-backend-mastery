@@ -103,13 +103,18 @@ export function useCluster(key = "") {
         if (operation !== "read") {
           try {
             const observation = await fetch(`/api/cluster?shard=${owner}`, {
-              cache: "no-store", signal: AbortSignal.timeout(1800),
+              cache: "no-store",
+              signal: AbortSignal.timeout(1800),
             });
             if (observation.ok) {
-              const sample = await observation.json() as Cluster;
-              beforeRows = Object.fromEntries(sample.Nodes.map((node) => [node.ID, { ...node.KV }]));
+              const sample = (await observation.json()) as Cluster;
+              beforeRows = Object.fromEntries(
+                sample.Nodes.map((node) => [node.ID, { ...node.KV }]),
+              );
             }
-          } catch { /* No sample means no row playback; the operation still runs. */ }
+          } catch {
+            /* No sample means no row playback; the operation still runs. */
+          }
         }
         // Animate only actual client operations, never background observation polls.
         const exchangeID = Date.now();
