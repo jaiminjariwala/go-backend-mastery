@@ -44,11 +44,7 @@ export function RaftConsole() {
         "Leo",
         "Ivy",
       ].entries()) {
-        const result = await operate(
-          "write",
-          String(101 + index),
-          name,
-        );
+        const result = await operate("write", String(101 + index), name);
         if (!result) break; // Preserve an uncertain operation for an explicit retry.
       }
       await request();
@@ -107,9 +103,7 @@ export function RaftConsole() {
         </button>
       </nav>
       {view === "concepts" && (
-        <VisualConcepts
-          onOpenLab={() => setView("live")}
-        />
+        <VisualConcepts onOpenLab={() => setView("live")} />
       )}
       {view === "live" && (
         <>
@@ -308,33 +302,73 @@ export function RaftConsole() {
               <details className="mb-3 rounded-xl border border-gray-200 px-4 py-3 text-ui-13">
                 <summary className="cursor-pointer font-medium text-gray-700">
                   Network experiments{partitioned ? " · isolation active" : ""}
-                  {target !== "auto" ? ` · requests target Server ${Number(target) + 1}` : ""}
+                  {target !== "auto"
+                    ? ` · requests target Server ${Number(target) + 1}`
+                    : ""}
                 </summary>
                 <div className="space-y-3 pt-3">
-                  <p className="text-xs text-gray-500">Controls affect Shard {selectedShard + 1}. Isolation blocks connections; it does not stop the process.</p>
+                  <p className="text-xs text-gray-500">
+                    Controls affect Shard {selectedShard + 1}. Isolation blocks
+                    connections; it does not stop the process.
+                  </p>
                   <div className="flex flex-wrap gap-2">
-                    <button className={secondary} disabled={busy || !leader || !!partitioned}
-                      onClick={() => leader && void request({ Action: "partition", ID: leader.ID })}>Isolate leader</button>
-                    <button className={secondary} disabled={!partitioned}
-                      onClick={() => void request({ Action: "heal" })}>Heal network</button>
+                    <button
+                      className={secondary}
+                      disabled={busy || !leader || !!partitioned}
+                      onClick={() =>
+                        leader &&
+                        void request({ Action: "partition", ID: leader.ID })
+                      }
+                    >
+                      Isolate leader
+                    </button>
+                    <button
+                      className={secondary}
+                      disabled={!partitioned}
+                      onClick={() => void request({ Action: "heal" })}
+                    >
+                      Heal network
+                    </button>
                   </div>
-                  {partitioned && <p className="text-xs text-warning">
-                    {isolatedID >= 0 ? `Server ${isolatedID + 1} is isolated. The other two can elect a leader. The isolated server cannot commit alone.` : "Isolation is configured for a stopped or restarting server."}
-                  </p>}
+                  {partitioned && (
+                    <p className="text-xs text-warning">
+                      {isolatedID >= 0
+                        ? `Server ${isolatedID + 1} is isolated. The other two can elect a leader. The isolated server cannot commit alone.`
+                        : "Isolation is configured for a stopped or restarting server."}
+                    </p>
+                  )}
                   <label className="flex flex-wrap items-center gap-2 text-gray-500">
                     Target server within the key’s shard
-                    <select aria-label="Client request destination" className="rounded-md border border-gray-200 bg-white px-2 py-1.5 text-gray-700"
-                      value={target} onChange={(e) => setTarget(e.target.value)}>
+                    <select
+                      aria-label="Client request destination"
+                      className="rounded-md border border-gray-200 bg-white px-2 py-1.5 text-gray-700"
+                      value={target}
+                      onChange={(e) => setTarget(e.target.value)}
+                    >
                       <option value="auto">Automatic (find the leader)</option>
-                      {cluster.Nodes.map((n) => <option key={n.ID} value={n.ID}>Server {n.ID + 1}{cluster.Isolated?.[n.ID] ? " · isolated" : ""}</option>)}
+                      {cluster.Nodes.map((n) => (
+                        <option key={n.ID} value={n.ID}>
+                          Server {n.ID + 1}
+                          {cluster.Isolated?.[n.ID] ? " · isolated" : ""}
+                        </option>
+                      ))}
                     </select>
                   </label>
                   <details className="text-xs text-gray-500">
                     <summary className="cursor-pointer">Sample data</summary>
-                    <button className={`${secondary} mt-2`} disabled={busy || !!pending} onClick={() => void addPracticeRows()}>
-                      {practiceBusy ? "Saving practice users…" : "Add five practice users"}
+                    <button
+                      className={`${secondary} mt-2`}
+                      disabled={busy || !!pending}
+                      onClick={() => void addPracticeRows()}
+                    >
+                      {practiceBusy
+                        ? "Saving practice users…"
+                        : "Add five practice users"}
                     </button>
-                    <p className="mt-2">Saves keys 101 to 105 through the real API. Existing values for these keys are replaced.</p>
+                    <p className="mt-2">
+                      Saves keys 101 to 105 through the real API. Existing
+                      values for these keys are replaced.
+                    </p>
                   </details>
                 </div>
               </details>
@@ -346,7 +380,14 @@ export function RaftConsole() {
                   : leader
                     ? `Server ${leader.ID + 1} is the leader`
                     : "Waiting for a leader"}
-                {!cluster?.Live && <><span className="mx-2 text-gray-300">·</span><span className="tabular-nums">Tick {cluster?.Tick || 0}</span></>}
+                {!cluster?.Live && (
+                  <>
+                    <span className="mx-2 text-gray-300">·</span>
+                    <span className="tabular-nums">
+                      Tick {cluster?.Tick || 0}
+                    </span>
+                  </>
+                )}
               </p>
               {!cluster?.Live && (
                 <div className="flex items-center gap-4">
@@ -375,7 +416,7 @@ export function RaftConsole() {
               )}
             </div>
             <KubernetesRecovery cluster={cluster} />
-          <NetworkCanvas
+            <NetworkCanvas
               cluster={cluster}
               exchange={exchange}
               playback={playback}
@@ -395,16 +436,22 @@ export function RaftConsole() {
               onToggle={(id) => void request({ Action: "toggle", ID: id })}
               onSelect={(id) => {
                 setSelected(id);
-                const details = document.getElementById("server-details") as HTMLDetailsElement | null;
+                const details = document.getElementById(
+                  "server-details",
+                ) as HTMLDetailsElement | null;
                 if (details) {
                   details.open = true;
-                  details.scrollIntoView({ behavior: "smooth", block: "start" });
+                  details.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                  });
                 }
               }}
             />
             {cluster?.Live ? (
               <p className="text-center text-xs text-gray-400">
-                Three copies of Shard {selectedShard + 1}. Saved rows stay here after a restart.
+                Three copies of Shard {selectedShard + 1}. Saved rows stay here
+                after a restart.
               </p>
             ) : (
               <div className="flex justify-center gap-5 text-ui-11 text-gray-400 sm:text-xs">
@@ -424,213 +471,222 @@ export function RaftConsole() {
             )}
           </section>
 
-          <details id="server-details" className="mt-6 scroll-mt-28 rounded-xl border border-gray-200 p-4">
-            <summary className="cursor-pointer text-sm font-medium text-gray-700">Server details and logs{sharded ? ` · Shard ${selectedShard + 1}` : ""}</summary>
+          <details
+            id="server-details"
+            className="mt-6 scroll-mt-28 rounded-xl border border-gray-200 p-4"
+          >
+            <summary className="cursor-pointer text-sm font-medium text-gray-700">
+              Server details and logs
+              {sharded ? ` · Shard ${selectedShard + 1}` : ""}
+            </summary>
             <section className="mt-4" aria-labelledby="state-title">
-            <h2
-              id="state-title"
-              className="text-ui-21 font-semibold tracking-heading-small"
-            >
-              Server state{sharded ? ` · Shard ${selectedShard + 1}` : ""}
-            </h2>
-            <div className="mt-3 overflow-x-auto">
-              <table className="w-full min-w-162.5 border-collapse text-left text-sm">
-                <thead className="border-b border-gray-200 text-ui-13 text-gray-500">
-                  <tr>
-                    {[
-                      "Server",
-                      "Role",
-                      "Term",
-                      "Snapshot through",
-                      "Retained log",
-                      "Committed",
-                      "Applied values",
-                      "",
-                    ].map((h, i) => (
-                      <th
-                        key={i}
-                        className="px-3 py-3 font-medium first:pl-0 last:pr-0"
-                      >
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {cluster?.Nodes.map((n) => (
-                    <tr key={n.ID} className="border-b border-gray-100">
-                      <td className="py-4 pr-3 font-medium">
-                        Server {n.ID + 1}
-                        {cluster.Live && (
-                          <span className="mt-1 block text-ui-11 font-normal text-gray-400">
-                            {cluster.PIDs?.[n.ID]
-                              ? `PID ${cluster.PIDs[n.ID]}`
-                              : "Process stopped"}
-                          </span>
-                        )}
-                      </td>
-                      <td
-                        className={`px-3 py-4 capitalize ${n.Role === "leader" ? "text-brand" : "text-gray-500"}`}
-                      >
-                        {n.Role}
-                      </td>
-                      <td className="px-3 py-4 tabular-nums text-gray-600">
-                        {cluster.Live && !n.Up ? "n/a" : n.Term}
-                      </td>
-                      <td className="px-3 py-4 tabular-nums text-gray-600">
-                        {cluster.Live && !n.Up ? "n/a" : n.Snapshot?.Index || 0}
-                      </td>
-                      <td className="px-3 py-4 tabular-nums text-gray-600">
-                        {cluster.Live && !n.Up ? "n/a" : n.Log?.length || 0}
-                      </td>
-                      <td className="px-3 py-4 tabular-nums text-gray-600">
-                        {cluster.Live && !n.Up ? "n/a" : n.Commit}
-                      </td>
-                      <td className="max-w-62.5 px-3 py-4 font-mono text-ui-13 text-gray-700">
-                        {Object.entries(n.KV).length
-                          ? Object.entries(n.KV).map(
-                              ([storedKey, storedValue], i, entries) => (
-                                <span
-                                  key={storedKey}
-                                  className="inline-block whitespace-nowrap"
-                                >
-                                  {storedKey} = {storedValue}
-                                  {i < entries.length - 1 ? ",\u00a0" : ""}
-                                </span>
-                              ),
-                            )
-                          : "No rows"}
-                      </td>
-                      <td className="py-4 pl-3 text-right">
-                        <button
-                          className="whitespace-nowrap text-ui-13 text-brand underline-offset-4 hover:underline"
-                          aria-expanded={selected === n.ID}
-                          disabled={cluster.Live && !n.Up}
-                          title={
-                            cluster.Live && !n.Up
-                              ? "The stopped process cannot report its log. Restart it to inspect recovered state."
-                              : undefined
-                          }
-                          onClick={() =>
-                            setSelected(selected === n.ID ? null : n.ID)
-                          }
+              <h2
+                id="state-title"
+                className="text-ui-21 font-semibold tracking-heading-small"
+              >
+                Server state{sharded ? ` · Shard ${selectedShard + 1}` : ""}
+              </h2>
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full min-w-162.5 border-collapse text-left text-sm">
+                  <thead className="border-b border-gray-200 text-ui-13 text-gray-500">
+                    <tr>
+                      {[
+                        "Server",
+                        "Role",
+                        "Term",
+                        "Snapshot through",
+                        "Retained log",
+                        "Committed",
+                        "Applied values",
+                        "",
+                      ].map((h, i) => (
+                        <th
+                          key={i}
+                          className="px-3 py-3 font-medium first:pl-0 last:pr-0"
                         >
-                          Inspect log
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {node && !(cluster?.Live && !node.Up) && (
-              <div className="mt-5 rounded-xl border border-gray-200 p-5">
-                <div className="flex items-center justify-between gap-4">
-                  <h3 className="font-medium">Server {node.ID + 1} log</h3>
-                  <button
-                    onClick={() => setSelected(null)}
-                    className="rounded px-2 text-xl text-gray-400 hover:text-gray-800"
-                    aria-label="Close log"
-                  >
-                    ×
-                  </button>
-                </div>
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-ui-13 text-gray-500">
-                  <p>
-                    {node.Snapshot?.Index
-                      ? `Snapshot covers entries 1-${node.Snapshot.Index}.`
-                      : "No snapshot yet."}{" "}
-                    Retained log begins at entry{" "}
-                    {(node.Snapshot?.Index || 0) + 1}.
-                  </p>
-                  {cluster?.Live && (
-                    <button
-                      className={secondary}
-                      disabled={
-                        busy || node.Commit <= (node.Snapshot?.Index || 0)
-                      }
-                      onClick={() =>
-                        void request({ Action: "snapshot", ID: node.ID })
-                      }
-                    >
-                      Snapshot committed log
-                    </button>
-                  )}
-                  <p className="w-full text-xs">
-                    A snapshot keeps the applied values and retry receipts; it
-                    discards only the committed log prefix. Pending entries
-                    remain.
-                  </p>
-                  {!!node.Snapshot?.Index && (
-                    <p className="w-full text-xs">
-                      Saved values: {Object.keys(node.Snapshot.KV || {}).length}{" "}
-                      · Saved retry receipts:{" "}
-                      {Object.keys(node.Snapshot.Requests || {}).length} ·
-                      Boundary term: {node.Snapshot.Term}
-                    </p>
-                  )}
-                  {cluster?.Live && (
-                    <p className="w-full text-xs">
-                      Current WAL size:{" "}
-                      {(cluster.WALBytes?.[node.ID] || 0).toLocaleString()}{" "}
-                      bytes. Snapshotting rewrites it with one checkpoint and
-                      the remaining suffix.
-                    </p>
-                  )}
-                </div>
-                <div className="mt-3 overflow-x-auto">
-                  <table className="w-full min-w-87.5 text-left text-ui-13">
-                    <thead className="border-b border-gray-200 text-gray-500">
-                      <tr>
-                        {["Entry", "Term", "Command", "State"].map((h) => (
-                          <th className="py-2 pr-3 font-normal" key={h}>
-                            {h}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {!node.Log?.length && (
-                        <tr>
-                          <td colSpan={4} className="py-4 text-gray-500">
-                            {node.Snapshot?.Index
-                              ? `No retained entries. The saved values are in the snapshot; the next write will use entry ${node.Snapshot.Index + 1}.`
-                              : "No entries yet. Wait for a leader, then write a value."}
-                          </td>
-                        </tr>
-                      )}
-                      {(node.Log || []).map((e, i) => (
-                        <tr key={i} className="border-b border-gray-100">
-                          <td className="py-3 pr-3">
-                            {(node.Snapshot?.Index || 0) + i + 1}
-                          </td>
-                          <td className="py-3 pr-3">{e.Term}</td>
-                          <td className="max-w-62.5 py-3 pr-3 font-mono whitespace-nowrap">
-                            {e.ReadKey
-                              ? `Read barrier: ${e.ReadKey}`
-                              : e.Delete
-                                ? `Remove row: ${e.Key}`
-                                : e.Key
-                                  ? `${e.Key} = ${e.Value}`
-                                  : "Leader no-op"}
-                            {e.RequestID && (
-                              <span className="mt-1 block text-ui-10 text-gray-400">
-                                {e.RequestID}
-                              </span>
-                            )}
-                          </td>
-                          <td className="py-3 text-gray-500">
-                            {(node.Snapshot?.Index || 0) + i < node.Commit
-                              ? "Committed"
-                              : "Pending"}
-                          </td>
-                        </tr>
+                          {h}
+                        </th>
                       ))}
-                    </tbody>
-                  </table>
-                </div>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cluster?.Nodes.map((n) => (
+                      <tr key={n.ID} className="border-b border-gray-100">
+                        <td className="py-4 pr-3 font-medium">
+                          Server {n.ID + 1}
+                          {cluster.Live && (
+                            <span className="mt-1 block text-ui-11 font-normal text-gray-400">
+                              {cluster.PIDs?.[n.ID]
+                                ? `PID ${cluster.PIDs[n.ID]}`
+                                : "Process stopped"}
+                            </span>
+                          )}
+                        </td>
+                        <td
+                          className={`px-3 py-4 capitalize ${n.Role === "leader" ? "text-brand" : "text-gray-500"}`}
+                        >
+                          {n.Role}
+                        </td>
+                        <td className="px-3 py-4 tabular-nums text-gray-600">
+                          {cluster.Live && !n.Up ? "n/a" : n.Term}
+                        </td>
+                        <td className="px-3 py-4 tabular-nums text-gray-600">
+                          {cluster.Live && !n.Up
+                            ? "n/a"
+                            : n.Snapshot?.Index || 0}
+                        </td>
+                        <td className="px-3 py-4 tabular-nums text-gray-600">
+                          {cluster.Live && !n.Up ? "n/a" : n.Log?.length || 0}
+                        </td>
+                        <td className="px-3 py-4 tabular-nums text-gray-600">
+                          {cluster.Live && !n.Up ? "n/a" : n.Commit}
+                        </td>
+                        <td className="max-w-62.5 px-3 py-4 font-mono text-ui-13 text-gray-700">
+                          {Object.entries(n.KV).length
+                            ? Object.entries(n.KV).map(
+                                ([storedKey, storedValue], i, entries) => (
+                                  <span
+                                    key={storedKey}
+                                    className="inline-block whitespace-nowrap"
+                                  >
+                                    {storedKey} = {storedValue}
+                                    {i < entries.length - 1 ? ",\u00a0" : ""}
+                                  </span>
+                                ),
+                              )
+                            : "No rows"}
+                        </td>
+                        <td className="py-4 pl-3 text-right">
+                          <button
+                            className="whitespace-nowrap text-ui-13 text-brand underline-offset-4 hover:underline"
+                            aria-expanded={selected === n.ID}
+                            disabled={cluster.Live && !n.Up}
+                            title={
+                              cluster.Live && !n.Up
+                                ? "The stopped process cannot report its log. Restart it to inspect recovered state."
+                                : undefined
+                            }
+                            onClick={() =>
+                              setSelected(selected === n.ID ? null : n.ID)
+                            }
+                          >
+                            Inspect log
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            )}
+              {node && !(cluster?.Live && !node.Up) && (
+                <div className="mt-5 rounded-xl border border-gray-200 p-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <h3 className="font-medium">Server {node.ID + 1} log</h3>
+                    <button
+                      onClick={() => setSelected(null)}
+                      className="rounded px-2 text-xl text-gray-400 hover:text-gray-800"
+                      aria-label="Close log"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-ui-13 text-gray-500">
+                    <p>
+                      {node.Snapshot?.Index
+                        ? `Snapshot covers entries 1-${node.Snapshot.Index}.`
+                        : "No snapshot yet."}{" "}
+                      Retained log begins at entry{" "}
+                      {(node.Snapshot?.Index || 0) + 1}.
+                    </p>
+                    {cluster?.Live && (
+                      <button
+                        className={secondary}
+                        disabled={
+                          busy || node.Commit <= (node.Snapshot?.Index || 0)
+                        }
+                        onClick={() =>
+                          void request({ Action: "snapshot", ID: node.ID })
+                        }
+                      >
+                        Snapshot committed log
+                      </button>
+                    )}
+                    <p className="w-full text-xs">
+                      A snapshot keeps the applied values and retry receipts; it
+                      discards only the committed log prefix. Pending entries
+                      remain.
+                    </p>
+                    {!!node.Snapshot?.Index && (
+                      <p className="w-full text-xs">
+                        Saved values:{" "}
+                        {Object.keys(node.Snapshot.KV || {}).length} · Saved
+                        retry receipts:{" "}
+                        {Object.keys(node.Snapshot.Requests || {}).length} ·
+                        Boundary term: {node.Snapshot.Term}
+                      </p>
+                    )}
+                    {cluster?.Live && (
+                      <p className="w-full text-xs">
+                        Current WAL size:{" "}
+                        {(cluster.WALBytes?.[node.ID] || 0).toLocaleString()}{" "}
+                        bytes. Snapshotting rewrites it with one checkpoint and
+                        the remaining suffix.
+                      </p>
+                    )}
+                  </div>
+                  <div className="mt-3 overflow-x-auto">
+                    <table className="w-full min-w-87.5 text-left text-ui-13">
+                      <thead className="border-b border-gray-200 text-gray-500">
+                        <tr>
+                          {["Entry", "Term", "Command", "State"].map((h) => (
+                            <th className="py-2 pr-3 font-normal" key={h}>
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {!node.Log?.length && (
+                          <tr>
+                            <td colSpan={4} className="py-4 text-gray-500">
+                              {node.Snapshot?.Index
+                                ? `No retained entries. The saved values are in the snapshot; the next write will use entry ${node.Snapshot.Index + 1}.`
+                                : "No entries yet. Wait for a leader, then write a value."}
+                            </td>
+                          </tr>
+                        )}
+                        {(node.Log || []).map((e, i) => (
+                          <tr key={i} className="border-b border-gray-100">
+                            <td className="py-3 pr-3">
+                              {(node.Snapshot?.Index || 0) + i + 1}
+                            </td>
+                            <td className="py-3 pr-3">{e.Term}</td>
+                            <td className="max-w-62.5 py-3 pr-3 font-mono whitespace-nowrap">
+                              {e.ReadKey
+                                ? `Read barrier: ${e.ReadKey}`
+                                : e.Delete
+                                  ? `Remove row: ${e.Key}`
+                                  : e.Key
+                                    ? `${e.Key} = ${e.Value}`
+                                    : "Leader no-op"}
+                              {e.RequestID && (
+                                <span className="mt-1 block text-ui-10 text-gray-400">
+                                  {e.RequestID}
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-3 text-gray-500">
+                              {(node.Snapshot?.Index || 0) + i < node.Commit
+                                ? "Committed"
+                                : "Pending"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </section>
           </details>
 

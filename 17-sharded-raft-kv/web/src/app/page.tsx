@@ -4,7 +4,8 @@ import { RaftConsole } from "@/components/raft-console";
 // Local development and configured deployments connect to the Go backend.
 // Standalone concept previews can still build without a running database.
 export default function Page() {
-  if (process.env.NODE_ENV === "development" || process.env.RAFT_API_ORIGIN) return <RaftConsole />;
+  if (process.env.NODE_ENV === "development" || process.env.RAFT_API_ORIGIN)
+    return <RaftConsole />;
   return (
     <main className="mx-auto max-w-270 px-5 pb-10 pt-9 font-sans sm:px-8 sm:pt-12">
       <header>
