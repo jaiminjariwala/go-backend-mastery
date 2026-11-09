@@ -484,12 +484,12 @@ export function VisualConcepts({ onOpenLab }: { onOpenLab?: () => void }) {
       <div className="mt-4 flex flex-wrap justify-between gap-3 text-xs text-gray-400">
         <span>Concept illustration · example data</span>
         {onOpenLab && (
-        <button
-          onClick={onOpenLab}
-          className="text-brand underline underline-offset-4"
-        >
-          Open live cluster →
-        </button>
+          <button
+            onClick={onOpenLab}
+            className="text-brand underline underline-offset-4"
+          >
+            Open live cluster →
+          </button>
         )}
       </div>
     </section>

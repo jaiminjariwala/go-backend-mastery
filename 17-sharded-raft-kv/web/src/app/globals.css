@@ -123,4 +123,6 @@ select {
 .live-replica-table .reference-table-grid {
   border-radius: 12px;
 }
-.live-replica-table th:first-child { width: 44%; }
+.live-replica-table th:first-child {
+  width: 44%;
+}
